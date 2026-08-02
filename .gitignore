@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env — never commit real secrets, see .env.example
+.env
+.env.*
+!.env.example
+
+# expo / react native
+.expo/
+.expo-shared/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+android/app/build/
+ios/build/
+ios/Pods/
+
+# testing
+coverage/
+.vitest/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editors / os
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# local scratch
+/tmp/
+scratch/
+
+# Superseded planning docs for ideas that were dropped (cooking-timer app,
+# party game). Kept locally for reference; the live spec is PROJECT.md.
+/PLAN.md
+/alright-hi-how-are-enumerated-pond.md
