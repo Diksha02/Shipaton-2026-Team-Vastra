@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // NestJS relies on decorator metadata emitted by the TypeScript compiler,
+    // which requires CommonJS output and classic decorators. This is the one
+    // place the workspace deviates from the ESM/Bundler base, and it is why the
+    // workspace packages emit CJS alongside ESM.
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "verbatimModuleSyntax": false,
+    "isolatedModules": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES2022",
+    "outDir": "./dist",
+    "noEmit": false,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
