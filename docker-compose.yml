@@ -1,0 +1,52 @@
+# Local development infrastructure.
+#
+# Every port is bound to 127.0.0.1 explicitly. Docker's default `"5432:5432"`
+# form publishes on 0.0.0.0 and punches through the Windows firewall, which
+# would expose the database to the local network. Do not shorten these.
+#
+#   pnpm env:up      start
+#   pnpm env:down    stop
+#   pnpm env:reset   destroy volumes and start clean
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vastra-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vastra
+      POSTGRES_PASSWORD: vastra
+      POSTGRES_DB: vastra
+      # Deterministic collation so local ordering matches Neon.
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=en-GB'
+    # Host port 55432, not 5432: a native Postgres already occupies 5432 on this
+    # machine. The container still listens on 5432 internally.
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vastra -d vastra']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: vastra-redis
+    restart: unless-stopped
+    # BullMQ requires eviction to be disabled: evicting a job key loses the job.
+    command: redis-server --maxmemory-policy noeviction --appendonly yes
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:
