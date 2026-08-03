@@ -3,6 +3,8 @@ import { staggerDelay } from '@vastra/design';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
+import { MotiPressable } from 'moti/interactions';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LockedSection } from '../../src/components/LockedSection';
@@ -19,27 +21,44 @@ import {
 } from '../../src/mock/data';
 import { useTheme } from '../../src/theme/ThemeProvider';
 
-function SectionHeader({ title, action }: { title: string; action?: string }) {
+const BRAND_CARD_WIDTH = 280;
+const TRENDING_CARD_WIDTH = 168;
+
+function usePressScale() {
+  return useMemo(
+    () =>
+      ({ pressed }: { pressed: boolean }) => {
+        'worklet';
+        return { scale: pressed ? 0.97 : 1 };
+      },
+    [],
+  );
+}
+
+function SectionHeader({ title, action, index }: { title: string; action?: string; index: number }) {
   const theme = useTheme();
   return (
-    <View
+    <MotiView
+      from={{ opacity: 0, translateY: 10 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: theme.duration.slow, delay: staggerDelay(index) }}
       style={{
         flexDirection: 'row',
-        alignItems: 'flex-end',
+        alignItems: 'baseline',
         justifyContent: 'space-between',
         paddingHorizontal: theme.layout.gutter,
-        marginBottom: theme.space.md,
+        marginBottom: theme.space.base,
       }}
     >
       <Text variant="title2">{title}</Text>
       {!!action && (
-        <Pressable hitSlop={8}>
-          <Text variant="subhead" colour="tertiary">
+        <Pressable hitSlop={10}>
+          <Text variant="footnote" colour="secondary">
             {action}
           </Text>
         </Pressable>
       )}
-    </View>
+    </MotiView>
   );
 }
 
@@ -47,47 +66,61 @@ function SectionHeader({ title, action }: { title: string; action?: string }) {
 function BrandCard({ moment, index }: { moment: BrandMoment; index: number }) {
   const theme = useTheme();
   const isFree = moment.kind === 'free_tryon';
+  const animate = usePressScale();
 
   return (
     <MotiView
-      from={{ opacity: 0, translateX: 16 }}
+      from={{ opacity: 0, translateX: 24 }}
       animate={{ opacity: 1, translateX: 0 }}
-      transition={{ type: 'timing', duration: theme.duration.base, delay: staggerDelay(index) }}
+      transition={{ type: 'timing', duration: theme.duration.slow, delay: staggerDelay(index) }}
     >
-      <Pressable>
+      <MotiPressable animate={animate} transition={{ type: 'timing', duration: theme.duration.instant }}>
         <View
           style={{
-            width: 260,
-            borderRadius: theme.radius.xl,
+            width: BRAND_CARD_WIDTH,
+            borderRadius: theme.radius['2xl'],
             overflow: 'hidden',
             borderWidth: theme.borderWidth.hairline,
             borderColor: isFree ? theme.colour.accentBorder : theme.colour.border,
             backgroundColor: theme.colour.surface,
+            ...theme.shadow.sm,
           }}
         >
           <View
             style={{
-              height: 124,
+              height: 168,
               justifyContent: 'flex-end',
-              padding: theme.space.md,
+              padding: theme.space.base,
               backgroundColor: theme.colour.surfaceGarment,
             }}
           >
-            <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, padding: 18 }}>
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
+                paddingHorizontal: theme.space.xl,
+                paddingVertical: theme.space.lg,
+              }}
+            >
               <Image
                 source={moment.image}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="contain"
-                transition={200}
+                transition={280}
               />
             </View>
             <View
               style={{
                 alignSelf: 'flex-start',
-                paddingHorizontal: theme.space.sm,
-                paddingVertical: 3,
-                borderRadius: theme.radius.sm,
+                paddingHorizontal: theme.space.md,
+                paddingVertical: theme.space.xs,
+                borderRadius: theme.radius.full,
                 backgroundColor: isFree ? theme.colour.accent : theme.colour.surface,
+                borderWidth: isFree ? 0 : theme.borderWidth.hairline,
+                borderColor: theme.colour.border,
               }}
             >
               <Text variant="overline" colour={isFree ? 'onAccent' : 'secondary'}>
@@ -96,58 +129,71 @@ function BrandCard({ moment, index }: { moment: BrandMoment; index: number }) {
             </View>
           </View>
 
-          <View style={{ padding: theme.space.base, gap: 2 }}>
+          <View style={{ paddingHorizontal: theme.space.lg, paddingVertical: theme.space.base, gap: theme.space.xs }}>
             <Text variant="overline" colour="tertiary">
               {moment.brand}
             </Text>
             <Text variant="headline">{moment.headline}</Text>
-            <Text variant="caption" colour="tertiary">
+            <Text variant="footnote" colour="tertiary" numberOfLines={2}>
               {moment.detail}
             </Text>
           </View>
         </View>
-      </Pressable>
+      </MotiPressable>
     </MotiView>
   );
 }
 
-function TrendingCard({ item, onPress }: { item: MockItem; onPress: () => void }) {
+function TrendingCard({ item, onPress, index }: { item: MockItem; onPress: () => void; index: number }) {
   const theme = useTheme();
+  const animate = usePressScale();
+
   return (
-    <Pressable onPress={onPress}>
-      <View style={{ width: 150, gap: theme.space.sm }}>
-        <View
-          style={{
-            height: 190,
-            borderRadius: theme.radius.lg,
-            overflow: 'hidden',
-            backgroundColor: theme.colour.surfaceGarment,
-            borderWidth: theme.borderWidth.hairline,
-            borderColor: theme.colour.border,
-          }}
-        >
-          <View style={{ flex: 1, padding: 16 }}>
-            <Image
-              source={item.image}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="contain"
-              transition={200}
-            />
+    <MotiView
+      from={{ opacity: 0, translateY: 16 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: theme.duration.slow, delay: staggerDelay(index) }}
+    >
+      <MotiPressable
+        onPress={onPress}
+        animate={animate}
+        transition={{ type: 'timing', duration: theme.duration.instant }}
+      >
+        <View style={{ width: TRENDING_CARD_WIDTH, gap: theme.space.md }}>
+          <View
+            style={{
+              height: 220,
+              borderRadius: theme.radius.xl,
+              overflow: 'hidden',
+              backgroundColor: theme.colour.surfaceGarment,
+              borderWidth: theme.borderWidth.hairline,
+              borderColor: theme.colour.border,
+              ...theme.shadow.sm,
+            }}
+          >
+            <View style={{ flex: 1, padding: theme.space.lg }}>
+              <Image
+                source={item.image}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="contain"
+                transition={280}
+              />
+            </View>
+          </View>
+          <View style={{ gap: theme.space.xs, paddingHorizontal: theme.space.hair }}>
+            <Text variant="overline" colour="tertiary">
+              {item.brand}
+            </Text>
+            <Text variant="subhead" numberOfLines={1}>
+              {item.title}
+            </Text>
+            <Text variant="footnote" colour="secondary">
+              {formatPrice(item.priceMinor, item.currency)}
+            </Text>
           </View>
         </View>
-        <View style={{ gap: 1 }}>
-          <Text variant="overline" colour="tertiary">
-            {item.brand}
-          </Text>
-          <Text variant="subhead" numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text variant="caption" colour="secondary">
-            {formatPrice(item.priceMinor, item.currency)}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
+      </MotiPressable>
+    </MotiView>
   );
 }
 
@@ -155,10 +201,19 @@ function TrendingCard({ item, onPress }: { item: MockItem; onPress: () => void }
 function LookStrip() {
   const theme = useTheme();
   return (
-    <View style={{ flexDirection: 'row', gap: theme.space.sm, padding: theme.space.md }}>
+    <View style={{ flexDirection: 'row', gap: theme.space.sm, padding: theme.space.base }}>
       {communityLooks.map((look) => (
         <View key={look.id} style={{ flex: 1, gap: theme.space.xs }}>
-          <View style={{ flexDirection: 'row', height: 120, borderRadius: theme.radius.md, overflow: 'hidden', gap: 1 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              height: 128,
+              borderRadius: theme.radius.lg,
+              overflow: 'hidden',
+              gap: theme.space.hair,
+              backgroundColor: theme.colour.surfaceGarment,
+            }}
+          >
             {itemsByIds(look.itemIds).map((item) => (
               <Image
                 key={item.id}
@@ -181,6 +236,8 @@ export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const gutter = theme.layout.gutter;
+  const ctaPress = usePressScale();
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -192,7 +249,7 @@ export default function HomeScreen() {
     <View style={{ flex: 1, backgroundColor: theme.colour.bg, paddingTop: insets.top }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: theme.space['4xl'], gap: theme.space['2xl'] }}
+        contentContainerStyle={{ paddingBottom: theme.space['6xl'] }}
       >
         {/*
           The masthead.
@@ -202,39 +259,65 @@ export default function HomeScreen() {
           toolbar. It appears once, here, on the landing screen only; repeating
           a wordmark on every screen is what makes it stop meaning anything.
         */}
-        <View
+        <MotiView
+          from={{ opacity: 0, translateY: -8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: theme.duration.deliberate }}
           style={{
-            paddingHorizontal: theme.layout.gutter,
-            paddingTop: theme.space.lg,
-            paddingBottom: theme.space.lg,
+            paddingHorizontal: gutter,
+            paddingTop: theme.space['2xl'],
+            paddingBottom: theme.space.xl,
             alignItems: 'center',
-            borderBottomWidth: theme.borderWidth.hairline,
-            borderBottomColor: theme.colour.border,
           }}
         >
-          <Text variant="display" style={{ letterSpacing: 0.5 }}>
+          <Text variant="display" style={{ letterSpacing: -0.6 }}>
             Vastra
           </Text>
-          <Text variant="overline" colour="tertiary" style={{ marginTop: theme.space.xs }}>
+          <Text variant="overline" colour="tertiary" style={{ marginTop: theme.space.sm }}>
             by you
           </Text>
-        </View>
+          <View
+            style={{
+              marginTop: theme.space.lg,
+              width: 28,
+              height: theme.borderWidth.hairline,
+              backgroundColor: theme.colour.borderStrong,
+            }}
+          />
+        </MotiView>
 
-        <View style={{ paddingHorizontal: theme.layout.gutter }}>
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: theme.duration.slow, delay: 80 }}
+          style={{
+            paddingHorizontal: gutter,
+            paddingTop: theme.space.lg,
+            paddingBottom: theme.space.xs,
+          }}
+        >
           <Text variant="overline" colour="tertiary">
             {today}
           </Text>
-          <Text variant="title1" style={{ marginTop: theme.space.xs }}>
+          <Text variant="title1" style={{ marginTop: theme.space.sm }}>
             What&apos;s new
           </Text>
-        </View>
+        </MotiView>
 
-        <View>
-          <SectionHeader title="From brands" action="All" />
+        <View style={{ paddingTop: theme.space['2xl'] }}>
+          <SectionHeader title="From brands" action="All" index={0} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: theme.layout.gutter, gap: theme.space.md }}
+            decelerationRate="fast"
+            snapToInterval={BRAND_CARD_WIDTH + theme.space.base}
+            snapToAlignment="start"
+            disableIntervalMomentum
+            contentContainerStyle={{
+              paddingHorizontal: gutter,
+              gap: theme.space.base,
+              paddingVertical: theme.space.xs,
+            }}
           >
             {brandMoments.map((moment, index) => (
               <BrandCard key={moment.id} moment={moment} index={index} />
@@ -242,21 +325,43 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        <View>
-          <SectionHeader title="Trending" action="Shop" />
+        <View style={{ paddingTop: theme.space['3xl'] }}>
+          <SectionHeader title="Trending" action="Shop" index={1} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: theme.layout.gutter, gap: theme.space.md }}
+            decelerationRate="fast"
+            snapToInterval={TRENDING_CARD_WIDTH + theme.space.base}
+            snapToAlignment="start"
+            disableIntervalMomentum
+            contentContainerStyle={{
+              paddingHorizontal: gutter,
+              gap: theme.space.base,
+              paddingVertical: theme.space.xs,
+            }}
           >
-            {trending.map((item) => (
-              <TrendingCard key={item.id} item={item} onPress={() => router.push(`/item/${item.id}`)} />
+            {trending.map((item, index) => (
+              <TrendingCard
+                key={item.id}
+                item={item}
+                index={index}
+                onPress={() => router.push(`/item/${item.id}`)}
+              />
             ))}
           </ScrollView>
         </View>
 
         {/* Locked (§2.2): visible, illustrative, never functional and never sold. */}
-        <View style={{ paddingHorizontal: theme.layout.gutter, gap: theme.space.base }}>
+        <MotiView
+          from={{ opacity: 0, translateY: 14 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: theme.duration.slow, delay: 160 }}
+          style={{
+            paddingHorizontal: gutter,
+            paddingTop: theme.space['3xl'],
+            gap: theme.space.lg,
+          }}
+        >
           <LockedSection
             title="What others are wearing"
             blurb="Outfit videos from people whose style you follow, and the pieces that make them."
@@ -272,7 +377,7 @@ export default function HomeScreen() {
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   gap: theme.space.sm,
-                  padding: theme.space.md,
+                  padding: theme.space.base,
                 }}
               >
                 {['ACME', 'Northbound', 'Studio Nord', 'Maison Lu'].map((brand) => (
@@ -284,6 +389,7 @@ export default function HomeScreen() {
                       borderRadius: theme.radius.full,
                       borderWidth: theme.borderWidth.hairline,
                       borderColor: theme.colour.borderStrong,
+                      backgroundColor: theme.colour.bg,
                     }}
                   >
                     <Text variant="subhead" colour="secondary">
@@ -294,32 +400,55 @@ export default function HomeScreen() {
               </View>
             }
           />
-        </View>
+        </MotiView>
 
-        <Pressable
-          onPress={() => router.push('/(tabs)/studio')}
-          style={{ paddingHorizontal: theme.layout.gutter }}
+        <MotiView
+          from={{ opacity: 0, translateY: 16 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: theme.duration.slow, delay: 220 }}
+          style={{ paddingHorizontal: gutter, paddingTop: theme.space['3xl'] }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: theme.space.md,
-              padding: theme.space.lg,
-              borderRadius: theme.radius.xl,
-              backgroundColor: theme.colour.surfaceMuted,
-            }}
+          <MotiPressable
+            onPress={() => router.push('/(tabs)/studio')}
+            animate={ctaPress}
+            transition={{ type: 'timing', duration: theme.duration.instant }}
           >
-            <Feather name="sliders" size={20} color={theme.colour.textSecondary} />
-            <View style={{ flex: 1 }}>
-              <Text variant="headline">Build something</Text>
-              <Text variant="caption" colour="tertiary">
-                Style an outfit from what you already own.
-              </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: theme.space.base,
+                paddingVertical: theme.space.xl,
+                paddingHorizontal: theme.space.lg,
+                borderRadius: theme.radius['2xl'],
+                backgroundColor: theme.colour.surface,
+                borderWidth: theme.borderWidth.hairline,
+                borderColor: theme.colour.border,
+                ...theme.shadow.sm,
+              }}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: theme.radius.full,
+                  backgroundColor: theme.colour.surfaceMuted,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Feather name="sliders" size={18} color={theme.colour.textPrimary} />
+              </View>
+              <View style={{ flex: 1, gap: theme.space.hair }}>
+                <Text variant="headline">Build something</Text>
+                <Text variant="footnote" colour="tertiary">
+                  Style an outfit from what you already own.
+                </Text>
+              </View>
+              <Feather name="arrow-right" size={18} color={theme.colour.textSecondary} />
             </View>
-            <Feather name="arrow-right" size={18} color={theme.colour.textTertiary} />
-          </View>
-        </Pressable>
+          </MotiPressable>
+        </MotiView>
       </ScrollView>
     </View>
   );
