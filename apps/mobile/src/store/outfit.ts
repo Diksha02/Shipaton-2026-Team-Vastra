@@ -16,6 +16,10 @@ export const MIN_PIECES = 2;
 
 export type SaveResult = 'saved' | 'full' | 'too_few';
 
+/** Outfit cards give the name a single line. Past this it is truncated on the
+ *  card anyway, so the cap is honesty rather than a restriction. */
+export const OUTFIT_NAME_MAX = 40;
+
 const EMPTY: OutfitLayers = {
   top: null,
   bottom: null,
@@ -45,6 +49,9 @@ interface OutfitState {
   /** Frees the slot the outfit occupied. Always permitted, for any outfit,
    *  finalised or not — see the note above `deleteOutfit`. */
   deleteOutfit: (id: string) => void;
+  /** Retitles a saved outfit. Permitted on finalised outfits: §4 locks the
+   *  garments, not the label — see the note above `renameOutfit`. */
+  renameOutfit: (id: string, name: string) => void;
 }
 
 /** Garments in paint order, so a saved outfit lists head-to-toe rather than in
@@ -55,14 +62,26 @@ function composedItemIds(layers: OutfitLayers): string[] {
   );
 }
 
-/** Slots are numbered by position, not by count of saves — deleting slot 2 and
- *  saving again should not produce two outfits called the same thing. */
+const AUTO_NAME = /^Outfit (\d+)$/;
+
+/**
+ * The placeholder name for a save the user has not named yet.
+ *
+ * Counts the user's own auto-named outfits, not slot positions: with four seeded
+ * outfits present, a first save is "Outfit 1", not "Outfit 5". Numbering by slot
+ * makes the very first outfit a user ever saves look like their fifth.
+ *
+ * Continues past the highest number in use rather than filling gaps, so deleting
+ * "Outfit 2" and saving again cannot produce a second outfit with a name the
+ * user already recognises as something else.
+ */
 function nextOutfitName(saved: readonly MockOutfit[]): string {
-  const taken = new Set(saved.map((outfit) => outfit.name));
-  for (let n = saved.length + 1; ; n += 1) {
-    const candidate = `Outfit ${n}`;
-    if (!taken.has(candidate)) return candidate;
-  }
+  const highest = saved.reduce((max, outfit) => {
+    const match = AUTO_NAME.exec(outfit.name);
+    return match?.[1] === undefined ? max : Math.max(max, Number(match[1]));
+  }, 0);
+
+  return `Outfit ${highest + 1}`;
 }
 
 /**
@@ -139,6 +158,30 @@ export const useOutfitStore = create<OutfitState>((set, get) => ({
     set((state) => {
       const saved = state.saved.filter((outfit) => outfit.id !== id);
       return saved.length === state.saved.length ? state : { saved };
+    }),
+
+  /**
+   * Renaming a finalised outfit is allowed, and is not a hole in the edit-lock.
+   * The §4 invariant is specific: an outfit is immutable in its items — "no
+   * adding, removing or reordering" — and `name` is a separate field from them.
+   * Locking the garments is the scarcity mechanic; locking the label would just
+   * be a typo the user cannot fix.
+   *
+   * A blank name is a no-op rather than an error. Clearing the field and tapping
+   * away means "never mind", not "leave this card with no title".
+   */
+  renameOutfit: (id, name) =>
+    set((state) => {
+      const trimmed = name.trim().slice(0, OUTFIT_NAME_MAX);
+      if (trimmed === '') return state;
+
+      const target = state.saved.find((outfit) => outfit.id === id);
+      if (!target || target.name === trimmed) return state;
+
+      const saved = state.saved.map((outfit) =>
+        outfit.id === id ? { ...outfit, name: trimmed } : outfit,
+      );
+      return { saved };
     }),
 }));
 
