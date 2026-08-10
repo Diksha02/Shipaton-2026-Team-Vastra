@@ -1,12 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../src/components/Button';
 import { Text } from '../src/components/Text';
+import { useGoBack } from '../src/hooks/useGoBack';
 import { itemsByIds } from '../src/mock/data';
 import { useTheme } from '../src/theme/ThemeProvider';
 
@@ -24,8 +24,8 @@ type Plan = 'annual' | 'monthly';
  */
 export default function PaywallScreen() {
   const theme = useTheme();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
+  const goBack = useGoBack();
   const [plan, setPlan] = useState<Plan>('annual');
 
   // The outfit at risk. Showing it is the entire argument.
@@ -43,7 +43,7 @@ export default function PaywallScreen() {
       {/* A real, obvious close button. Never disguised, never delayed. */}
       <View style={{ paddingHorizontal: theme.layout.gutter, paddingTop: theme.space.sm }}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           hitSlop={12}
           style={{
             alignSelf: 'flex-end',

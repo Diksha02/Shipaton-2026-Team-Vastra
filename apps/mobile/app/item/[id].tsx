@@ -1,11 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { MotiView } from 'moti';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
 import { Text } from '../../src/components/Text';
+import { useGoBack } from '../../src/hooks/useGoBack';
 import {
   CATEGORY_LABEL,
   catalogue,
@@ -16,8 +17,9 @@ import { useTheme } from '../../src/theme/ThemeProvider';
 
 export default function ItemDetailScreen() {
   const theme = useTheme();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
+  // A bad id is most likely reached by link, where there is no history at all.
+  const goBack = useGoBack('/wardrobe-grid');
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const item = [...wardrobe, ...catalogue].find((candidate) => candidate.id === id);
@@ -38,7 +40,7 @@ export default function ItemDetailScreen() {
         <Text variant="callout" colour="tertiary" align="center">
           That piece isn&apos;t in your wardrobe any more.
         </Text>
-        <Button label="Go back" variant="secondary" fullWidth={false} onPress={() => router.back()} />
+        <Button label="Go back" variant="secondary" fullWidth={false} onPress={goBack} />
       </View>
     );
   }
@@ -54,7 +56,7 @@ export default function ItemDetailScreen() {
             transition={220}
           />
           <Pressable
-            onPress={() => router.back()}
+            onPress={goBack}
             hitSlop={12}
             style={{
               position: 'absolute',
