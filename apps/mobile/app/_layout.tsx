@@ -39,7 +39,14 @@ function RootStack() {
             name="paywall"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
-          <Stack.Screen name="item/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen
+            name="item/[id]"
+            options={{
+              presentation: 'transparentModal',
+              animation: 'fade',
+              contentStyle: { backgroundColor: 'transparent' },
+            }}
+          />
           <Stack.Screen name="wardrobe-grid" options={{ animation: 'slide_from_right' }} />
         </Stack>
       </PhoneFrame>
