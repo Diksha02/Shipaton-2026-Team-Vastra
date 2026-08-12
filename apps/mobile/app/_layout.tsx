@@ -11,10 +11,11 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { LoadingScreen } from '../src/components/LoadingScreen';
+import { BrandIntro } from '../src/components/LoadingScreen';
 import { PhoneFrame } from '../src/components/PhoneFrame';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 
@@ -27,29 +28,27 @@ function RootStack() {
     <>
       {/* Follows the resolved theme so the clock and battery stay legible in both. */}
       <StatusBar style={theme.name === 'dark' ? 'light' : 'dark'} />
-      <PhoneFrame>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: theme.colour.bg },
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colour.bg },
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="paywall"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="item/[id]"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'fade',
+            contentStyle: { backgroundColor: 'transparent' },
           }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="paywall"
-            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen
-            name="item/[id]"
-            options={{
-              presentation: 'transparentModal',
-              animation: 'fade',
-              contentStyle: { backgroundColor: 'transparent' },
-            }}
-          />
-          <Stack.Screen name="wardrobe-grid" options={{ animation: 'slide_from_right' }} />
-        </Stack>
-      </PhoneFrame>
+        />
+        <Stack.Screen name="wardrobe-grid" options={{ animation: 'slide_from_right' }} />
+      </Stack>
     </>
   );
 }
@@ -63,16 +62,16 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [introDone, setIntroDone] = useState(false);
+
+  const fontsReady = Boolean(loaded || error);
+  const finishIntro = useCallback(() => setIntroDone(true), []);
 
   useEffect(() => {
-    // Hide on error too — a missing font should degrade to the system face,
-    // never leave the user staring at a splash screen forever.
-    if (loaded || error) void SplashScreen.hideAsync();
-  }, [loaded, error]);
-
-  // No artificial hold. An earlier version waited 900ms so the brand moment
-  // registered; it read as slowness, which is worse than being unseen.
-  const ready = loaded || error;
+    // Reveal the branded intro immediately so the mark is not trapped under
+    // the OS splash. The mark is an image and does not need fonts.
+    void SplashScreen.hideAsync();
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -84,15 +83,24 @@ export default function RootLayout() {
             provider mounts would flash the wrong background on a dark phone —
             the exact seam the branded loading screen exists to hide.
           */}
-          {ready ? (
-            <RootStack />
-          ) : (
-            <PhoneFrame>
-              <LoadingScreen />
-            </PhoneFrame>
-          )}
+          <PhoneFrame>
+            <View style={styles.stage}>
+              {/* Mount Today as soon as fonts resolve, still under the intro.
+                  The V overlay itself never remounts — that flash was the bug. */}
+              {fontsReady ? <RootStack /> : null}
+              {!introDone && (
+                <BrandIntro readyToZoom={fontsReady} onComplete={finishIntro} />
+              )}
+            </View>
+          </PhoneFrame>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  stage: {
+    flex: 1,
+  },
+});
