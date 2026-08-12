@@ -43,7 +43,7 @@ export function LockedSection({ title, blurb, preview, style }: LockedSectionPro
         </View>
       )}
 
-      <View style={{ padding: theme.space.base, gap: theme.space.sm }}>
+      <View style={{ padding: theme.space.lg, gap: theme.space.md }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}>
           <Text variant="headline" style={{ flex: 1 }}>
             {title}
@@ -52,9 +52,9 @@ export function LockedSection({ title, blurb, preview, style }: LockedSectionPro
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
+              gap: theme.space.xs,
               paddingHorizontal: theme.space.sm,
-              paddingVertical: 3,
+              paddingVertical: theme.space.hair,
               borderRadius: theme.radius.sm,
               backgroundColor: theme.colour.surfaceMuted,
             }}
