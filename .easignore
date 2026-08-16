@@ -1,0 +1,39 @@
+# What EAS Build must never upload.
+#
+# EAS archives the working directory (so uncommitted work IS included, which is
+# what we want here). This file keeps that archive small — without it the upload
+# carries node_modules and every build artefact, which is slow and occasionally
+# fatal on the free tier.
+
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+.turbo/
+.expo/
+.expo-shared/
+**/dist/
+*.tsbuildinfo
+
+# never leave this machine
+.env
+.env.*
+!.env.example
+
+# local infrastructure and tooling
+docker-compose.yml
+scratch/
+coverage/
+.vitest/
+
+# the API and worker are not part of a mobile build
+apps/api/
+apps/worker/
+
+# docs add nothing to a binary
+docs/
+*.md
+!apps/mobile/**/*.md
