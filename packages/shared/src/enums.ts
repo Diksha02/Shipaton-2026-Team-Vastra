@@ -85,6 +85,45 @@ export const ITEM_COLOURS = [
 export const itemColourSchema = z.enum(ITEM_COLOURS);
 export type ItemColour = z.infer<typeof itemColourSchema>;
 
+/**
+ * Who a garment is cut for.
+ *
+ * Called *department* rather than gender on purpose. This is a retail
+ * merchandising axis — the section of a shop an item sits in — not a claim about
+ * the person browsing. Someone may shop menswear, womenswear and kids in the
+ * same session, and plenty of people shop across all of them for themselves.
+ *
+ * `unisex` is a real department, not a fallback for missing data: it is how the
+ * item is *sold*. A user's own uploaded clothes default to it because we have no
+ * business assigning a department to something they already own and wear.
+ */
+export const DEPARTMENTS = ['womenswear', 'menswear', 'kids', 'unisex'] as const;
+export const departmentSchema = z.enum(DEPARTMENTS);
+export type Department = z.infer<typeof departmentSchema>;
+
+export const DEPARTMENT_LABEL: Readonly<Record<Department, string>> = Object.freeze({
+  womenswear: 'Women',
+  menswear: 'Men',
+  kids: 'Kids',
+  unisex: 'Unisex',
+});
+
+/**
+ * Which departments a shopper wants to see. Multi-select, and empty means
+ * *everything* rather than nothing — an empty filter that hid the whole
+ * catalogue would read as a broken app.
+ */
+export function matchesDepartments(
+  item: { department: Department },
+  selected: readonly Department[],
+): boolean {
+  if (selected.length === 0) return true;
+  // Unisex belongs in every department's results. Filtering it out is the
+  // classic bug here: shop Menswear and the plain white tees vanish.
+  if (item.department === 'unisex') return true;
+  return selected.includes(item.department);
+}
+
 // --- outfits ---------------------------------------------------------------
 
 /** A `finalised` outfit is immutable: no adding, removing or reordering items.
@@ -129,4 +168,3 @@ export const SLOT_PACK_GRANTS: Readonly<Record<'slots_3' | 'slots_10', number>> 
   slots_10: 10,
 });
 
-export const FREE_SLOTS_DEFAULT = 5;

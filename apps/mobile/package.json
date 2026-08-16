@@ -19,6 +19,7 @@
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo/metro-runtime": "~57.0.8",
     "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@shopify/flash-list": "2.0.2",
     "@vastra/design": "workspace:*",
     "@vastra/shared": "workspace:*",

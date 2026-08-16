@@ -17,8 +17,48 @@ import {
   outfits,
   wardrobe,
 } from '../../src/mock/data';
+import { useOnboardingStore } from '../../src/store/onboarding';
 import { useActiveLayer, useFilledCount, useLayer, useOutfitStore } from '../../src/store/outfit';
 import { useTheme } from '../../src/theme/ThemeProvider';
+
+/** A round header control. Uniform size and hit area across all three, so the
+ *  row reads as one set rather than three ad-hoc buttons. */
+function HeaderButton({
+  icon,
+  label,
+  onPress,
+  filled = false,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  onPress: () => void;
+  filled?: boolean;
+}) {
+  const theme = useTheme();
+
+  return (
+    <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={label}>
+      <View
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: theme.radius.full,
+          backgroundColor: filled ? theme.colour.actionPrimary : 'transparent',
+          borderWidth: filled ? 0 : theme.borderWidth.hairline,
+          borderColor: theme.colour.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Feather
+          name={icon}
+          size={16}
+          color={filled ? theme.colour.textOnAction : theme.colour.textSecondary}
+        />
+      </View>
+    </Pressable>
+  );
+}
 
 /** A quiet text action. Low visual weight on purpose — these sit near the stage
  *  and must never compete with the outfit or the primary button. */
@@ -123,6 +163,7 @@ export default function StudioScreen() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const replayGuide = useOnboardingStore((s) => s.replay);
 
   const pieceCount = useFilledCount();
   const shuffle = useOutfitStore((state) => state.shuffle);
@@ -145,14 +186,32 @@ export default function StudioScreen() {
       >
         <Text variant="title2">Studio</Text>
 
-        <Pressable
-          onPress={() => router.push('/wardrobe-grid')}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="See everything you own"
-        >
-          <Feather name="grid" size={19} color={theme.colour.textSecondary} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: theme.space.sm }}>
+          <HeaderButton
+            icon="help-circle"
+            label="How this works"
+            onPress={() => {
+              if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              replayGuide();
+            }}
+          />
+          <HeaderButton
+            icon="grid"
+            label="See everything you own"
+            onPress={() => router.push('/wardrobe-grid')}
+          />
+          {/* Adding a piece is the app's primary action, and belongs on every
+              screen where you might notice something missing. */}
+          <HeaderButton
+            icon="plus"
+            label="Add a piece"
+            filled
+            onPress={() => {
+              if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/add');
+            }}
+          />
+        </View>
       </View>
 
       {/* The stage takes every pixel the rest of the screen does not need. */}

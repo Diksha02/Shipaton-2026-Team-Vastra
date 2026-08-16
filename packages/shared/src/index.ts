@@ -8,10 +8,13 @@
  */
 
 export * from './api';
+export * from './catalogue-query';
 export * from './enums';
 export * from './errors';
 export * from './flags';
 export * from './ids';
+export * from './referral-code';
+export * from './slots';
 
 export * from './schemas/asset';
 export * from './schemas/billing';

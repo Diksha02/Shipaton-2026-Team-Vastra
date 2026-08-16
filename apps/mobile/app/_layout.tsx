@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoadingScreen } from '../src/components/LoadingScreen';
+import { Walkthrough } from '../src/components/Walkthrough';
 import { PhoneFrame } from '../src/components/PhoneFrame';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 
@@ -41,7 +42,14 @@ function RootStack() {
           />
           <Stack.Screen name="item/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="wardrobe-grid" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen
+            name="add"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
         </Stack>
+
+        {/* Above the navigator so it covers whatever screen you land on. */}
+        <Walkthrough />
       </PhoneFrame>
     </>
   );
