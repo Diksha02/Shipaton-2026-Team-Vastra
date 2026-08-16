@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import { Text, View } from 'react-native';
+import { Walkthrough } from '../../src/components/Walkthrough';
 import { useTheme } from '../../src/theme/ThemeProvider';
 
 /**
@@ -36,16 +37,20 @@ function TabLabel({ label, focused }: { label: string; focused: boolean }) {
 export default function TabsLayout() {
   const theme = useTheme();
 
+  // Five tabs, with Looks second — one tap from launch, never buried behind a
+  // section header.
   const screens = [
     { name: 'index', label: 'Today', icon: 'home' },
+    { name: 'looks', label: 'Looks', icon: 'play-circle' },
     { name: 'studio', label: 'Studio', icon: 'sliders' },
     { name: 'outfits', label: 'Outfits', icon: 'layers' },
     { name: 'profile', label: 'You', icon: 'user' },
   ] as const;
 
   return (
-    <Tabs
-      screenOptions={{
+    <View style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colour.textPrimary,
         tabBarInactiveTintColor: theme.colour.textTertiary,
@@ -62,17 +67,29 @@ export default function TabsLayout() {
         },
       }}
     >
-      {screens.map((screen) => (
-        <Tabs.Screen
-          key={screen.name}
-          name={screen.name}
-          options={{
-            title: screen.label,
-            tabBarLabel: ({ focused }) => <TabLabel label={screen.label} focused={focused} />,
-            tabBarIcon: ({ color }) => <Feather name={screen.icon} size={19} color={color} />,
-          }}
-        />
-      ))}
-    </Tabs>
+        {screens.map((screen) => (
+          <Tabs.Screen
+            key={screen.name}
+            name={screen.name}
+            options={{
+              title: screen.label,
+              tabBarLabel: ({ focused }) => <TabLabel label={screen.label} focused={focused} />,
+              tabBarIcon: ({ color }) => <Feather name={screen.icon} size={19} color={color} />,
+            }}
+          />
+        ))}
+      </Tabs>
+
+      {/*
+        The walkthrough lives *inside* the tabs, not above the root Stack.
+        It teaches the tab experience, so covering a modal the user deliberately
+        opened — sign-in, the paywall, add-a-piece — was simply wrong. Placing it
+        here makes that impossible by construction: every modal and pushed screen
+        is a sibling of `(tabs)` in the root Stack and therefore renders above
+        this. A runtime route check would have worked too, and would have been
+        one refactor away from breaking again.
+      */}
+      <Walkthrough />
+    </View>
   );
 }

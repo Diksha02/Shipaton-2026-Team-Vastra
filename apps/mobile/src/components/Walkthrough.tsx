@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -15,33 +16,43 @@ interface Step {
 }
 
 /**
- * Three steps, no more.
+ * Three steps, and the last one *does* something.
  *
- * Research on this app category is blunt about it: the slower the onboarding,
- * the more likely someone abandons the app before they have catalogued enough
- * clothes for it to be useful. So this explains only what is not discoverable
- * by tapping — and it is skippable from the first frame.
+ * Two findings shaped this. Reaching a first meaningful action inside about a
+ * minute roughly doubles seven-day retention, and three to five screens is the
+ * ceiling before completion falls off measurably. The earlier version cleared
+ * the second but failed the first: it ended on "Let's go", which dismissed onto
+ * a browse screen, so someone finished onboarding having *read* three slides and
+ * done nothing.
+ *
+ * Now the final button opens the Studio, where the figure is already wearing
+ * something. That is this app's "aha", it costs one tap, and it needs no camera
+ * permission and no photography before it pays off.
+ *
+ * Copy is written as things you can do, not as a feature list, and kept short —
+ * every sentence here is a sentence between someone and the product.
  */
 const STEPS: Step[] = [
   {
     icon: 'plus-circle',
     title: 'Add what you own',
-    body: 'Photograph a piece, or paste a link from a shop. It gets tagged for you — takes a few seconds each.',
+    body: 'Photograph a piece, or paste a shop link. It gets tagged for you.',
   },
   {
     icon: 'sliders',
-    title: 'Build an outfit',
-    body: 'Pick a category, then swipe to choose. The figure wears whatever you pick, so you can see it come together.',
+    title: 'See it on',
+    body: 'Pick a category and swipe. The figure wears whatever you choose.',
   },
   {
     icon: 'heart',
-    title: 'Save the ones you like',
-    body: 'Five spaces free. Saved outfits stay exactly as you made them, and you can delete any of them any time.',
+    title: 'Keep the ones that work',
+    body: 'One permanent space you can reuse forever, plus four single-use saves. Deleting is always free.',
   },
 ];
 
 export function Walkthrough() {
   const theme = useTheme();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const shouldShow = useShouldShowWalkthrough();
   const complete = useOnboardingStore((s) => s.complete);
@@ -134,9 +145,18 @@ export function Walkthrough() {
           </Text>
         </MotiView>
 
+        {/* One action per step, never a choice between two. Reducing the number
+            of *decisions* matters more than reducing the number of taps. */}
         <Button
-          label={isLast ? "Let's go" : 'Next'}
-          onPress={() => (isLast ? complete() : setStep((s) => s + 1))}
+          label={isLast ? 'Build your first outfit' : 'Next'}
+          onPress={() => {
+            if (!isLast) {
+              setStep((s) => s + 1);
+              return;
+            }
+            complete();
+            router.push('/(tabs)/studio');
+          }}
         />
       </MotiView>
     </MotiView>
