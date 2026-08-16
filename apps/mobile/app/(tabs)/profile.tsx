@@ -1,18 +1,35 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { ThemeName } from '@vastra/design';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { Button } from '../../src/components/Button';
 import { Chip } from '../../src/components/Chip';
 import { Screen } from '../../src/components/Screen';
 import { Text } from '../../src/components/Text';
 import { lockedFeatures } from '../../src/mock/data';
+import { PLACEMENTS } from '../../src/purchases/config';
+import { presentCustomerCenter } from '../../src/purchases/paywall';
+import { useOpenPaywall } from '../../src/purchases/usePaywall';
+import { useAuth } from '../../src/store/auth';
+import { usePosts } from '../../src/store/posts';
+import { useSpaces } from '../../src/store/savedOutfits';
+import { useEntitlements } from '../../src/store/entitlements';
 import { useTheme, useThemeControls } from '../../src/theme/ThemeProvider';
 
-function Row({ icon, label, hint }: { icon: keyof typeof Feather.glyphMap; label: string; hint?: string }) {
+function Row({
+  icon,
+  label,
+  hint,
+  onPress,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  hint?: string;
+  onPress?: () => void;
+}) {
   const theme = useTheme();
   return (
-    <Pressable>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
       <View
         style={{
           flexDirection: 'row',
@@ -88,9 +105,18 @@ function LockedTile({ title, blurb }: { title: string; blurb: string }) {
 }
 
 export default function ProfileScreen() {
+  const authUser = useAuth((s) => s.user);
+  const signOutOfAccount = useAuth((s) => s.signOut);
   const theme = useTheme();
   const router = useRouter();
   const { override, setOverride } = useThemeControls();
+  const openPaywall = useOpenPaywall();
+  const isPro = useEntitlements((s) => s.isPro);
+  const purchasesStatus = useEntitlements((s) => s.status);
+  const restore = useEntitlements((s) => s.restore);
+  const spaces = useSpaces(isPro);
+  const blockedHandles = usePosts((s) => s.blockedHandles);
+  const unblockAuthor = usePosts((s) => s.unblockAuthor);
 
   const options: Array<{ label: string; value: ThemeName | null }> = [
     { label: 'System', value: null },
@@ -120,15 +146,19 @@ export default function ProfileScreen() {
             <Feather name="user" size={24} color={theme.colour.textTertiary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text variant="title2">@ujjwal</Text>
+            <Text variant="title2">
+              {authUser?.displayName ?? authUser?.email ?? 'Your wardrobe'}
+            </Text>
             <Text variant="footnote" colour="tertiary">
-              Free plan · 4 of 5 slots used
+              {isPro
+                ? 'Vastra Pro · unlimited spaces'
+                : `Free plan · ${spaces.reusableUsed}/${spaces.reusableSlots} permanent · ${spaces.creditsLeft} single-use left`}
             </Text>
           </View>
         </View>
 
         {/* The one chromatic surface in the app. Colour means premium. */}
-        <Pressable onPress={() => router.push('/paywall')}>
+        <Pressable onPress={() => void openPaywall(PLACEMENTS.profileUpsell)}>
           <View
             style={{
               padding: theme.space.lg,
@@ -150,7 +180,11 @@ export default function ProfileScreen() {
               Every look you build, saved. Priority try-on and HD export included.
             </Text>
             <View style={{ paddingTop: theme.space.xs }}>
-              <Button label="See what's included" variant="accent" onPress={() => router.push('/paywall')} />
+              <Button
+                label={isPro ? 'Manage subscription' : "See what's included"}
+                variant="accent"
+                onPress={() => void (isPro ? presentCustomerCenter() : openPaywall())}
+              />
             </View>
           </View>
         </Pressable>
@@ -175,10 +209,81 @@ export default function ProfileScreen() {
           <Text variant="overline" colour="tertiary" style={{ marginBottom: theme.space.xs }}>
             Account
           </Text>
+          {/* Identity first: whether your wardrobe is backed up is a more
+              pressing question than any setting below it. */}
+          {authUser ? (
+            <Row
+              icon="log-out"
+              label="Sign out"
+              hint={authUser.email ?? authUser.displayName ?? 'Signed in'}
+              onPress={() => void signOutOfAccount()}
+            />
+          ) : (
+            <Row
+              icon="log-in"
+              label="Sign in"
+              hint="Keep your wardrobe if you change phone"
+              onPress={() => router.push('/sign-in')}
+            />
+          )}
+          {/* Restore is a store requirement on both platforms, and the first
+              thing a returning user looks for after reinstalling. */}
+          <Row
+            icon="refresh-cw"
+            label="Restore purchases"
+            hint={
+              purchasesStatus === 'ready'
+                ? 'Already paid? Bring it back.'
+                : 'Available once purchases are set up.'
+            }
+            onPress={purchasesStatus === 'ready' ? () => void restore() : undefined}
+          />
+          <Row
+            icon="heart"
+            label="Saved pieces"
+            hint="Things you are considering"
+            onPress={() => router.push('/saved')}
+          />
           <Row icon="camera" label="Your photo" hint="Used for try-on. Delete any time." />
           <Row icon="bell" label="Notifications" />
           <Row icon="shield" label="Privacy & data" />
-          <Row icon="trash-2" label="Delete account" hint="Removes everything, permanently." />
+          <Row
+            icon="activity"
+            label="Purchases diagnostics"
+            hint="What RevenueCat actually reports"
+            onPress={() => router.push('/diagnostics')}
+          />
+          <Row
+            icon="user-x"
+            label="Blocked accounts"
+            hint={
+              blockedHandles.length === 0
+                ? 'Nobody blocked'
+                : `${blockedHandles.length} blocked`
+            }
+            onPress={
+              blockedHandles.length === 0
+                ? undefined
+                : () =>
+                    Alert.alert(
+                      'Blocked accounts',
+                      blockedHandles.map((h) => `@${h}`).join(', '),
+                      [
+                        { text: 'Done', style: 'cancel' },
+                        {
+                          text: 'Unblock all',
+                          onPress: () => blockedHandles.forEach((h) => unblockAuthor(h)),
+                        },
+                      ],
+                    )
+            }
+          />
+          <Row
+            icon="trash-2"
+            label="Delete account"
+            hint="Removes everything, permanently."
+            onPress={() => router.push('/delete-account')}
+          />
         </View>
 
         <View style={{ gap: theme.space.md }}>
