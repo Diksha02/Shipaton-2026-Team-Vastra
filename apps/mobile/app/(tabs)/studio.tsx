@@ -2,21 +2,24 @@ import Feather from '@expo/vector-icons/Feather';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
+import { SaveOutfitSheet } from '../../src/components/SaveOutfitSheet';
 import { CategoryStrip } from '../../src/components/CategoryStrip';
 import { LayerCarousel } from '../../src/components/LayerCarousel';
 import { OutfitStage } from '../../src/components/OutfitStage';
 import { Text } from '../../src/components/Text';
 import {
-  FREE_SLOTS,
   STUDIO_LAYER_LABEL,
   itemsForLayer,
-  outfits,
   wardrobe,
 } from '../../src/mock/data';
+import { PLACEMENTS } from '../../src/purchases/config';
+import { useOpenPaywall } from '../../src/purchases/usePaywall';
+import { useIsPro } from '../../src/store/entitlements';
+import { useSavedOutfits, useSpaces } from '../../src/store/savedOutfits';
 import { useOnboardingStore } from '../../src/store/onboarding';
 import { useActiveLayer, useFilledCount, useLayer, useOutfitStore } from '../../src/store/outfit';
 import { useTheme } from '../../src/theme/ThemeProvider';
@@ -164,13 +167,45 @@ export default function StudioScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const replayGuide = useOnboardingStore((s) => s.replay);
+  const openPaywall = useOpenPaywall();
 
   const pieceCount = useFilledCount();
   const shuffle = useOutfitStore((state) => state.shuffle);
   const reset = useOutfitStore((state) => state.reset);
 
-  const slotsFull = outfits.length >= FREE_SLOTS;
-  const spacesLeft = Math.max(0, FREE_SLOTS - outfits.length);
+  const isPro = useIsPro();
+  const spaces = useSpaces(isPro);
+  const saveOutfit = useSavedOutfits((s) => s.save);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // A name you would actually have chosen, so the fast path is one tap.
+  const suggestion = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+
+  function handleSavePress() {
+    if (pieceCount < 2) return;
+    // The paywall appears at exactly one moment: when there is no space left.
+    if (spaces.full) {
+      void openPaywall(PLACEMENTS.outfitLimit);
+      return;
+    }
+    setSheetOpen(true);
+  }
+
+  function handleSaveConfirm(name: string) {
+    const result = saveOutfit(useOutfitStore.getState().layers, name, isPro);
+    setSheetOpen(false);
+    if (result.ok) {
+      setToast(
+        result.slot === 'single_use'
+          ? `Saved "${result.outfit.name}" · ${result.creditsLeft} single-use left`
+          : `Saved "${result.outfit.name}"`,
+      );
+      setTimeout(() => setToast(null), 2200);
+    } else if (result.reason === 'no_space') {
+      void openPaywall(PLACEMENTS.outfitLimit);
+    }
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colour.bg, paddingTop: insets.top }}>
@@ -261,21 +296,57 @@ export default function StudioScreen() {
         }}
       >
         <Button
-          label="Save this outfit"
+          label={spaces.full ? 'Get more space' : 'Save this outfit'}
           disabled={pieceCount < 2}
-          onPress={() => {
-            if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (slotsFull) router.push('/paywall');
-          }}
+          onPress={handleSavePress}
         />
         <Text variant="caption" colour="tertiary" align="center">
           {pieceCount < 2
             ? 'Pick at least two pieces'
-            : slotsFull
-              ? 'All 5 spaces are full'
-              : `${spacesLeft} of ${FREE_SLOTS} spaces left`}
+            : spaces.unlimited
+              ? 'Unlimited spaces with Pro'
+              : spaces.full
+                ? 'No spaces left'
+                : spaces.nextSlot === 'reusable'
+                  ? 'Goes in your permanent space'
+                  : `${spaces.creditsLeft} single-use ${spaces.creditsLeft === 1 ? 'save' : 'saves'} left`}
         </Text>
       </View>
+
+      <SaveOutfitSheet
+        visible={sheetOpen}
+        suggestion={suggestion}
+        nextSlot={spaces.nextSlot}
+        creditsLeft={spaces.creditsLeft}
+        unlimited={spaces.unlimited}
+        onCancel={() => setSheetOpen(false)}
+        onSave={handleSaveConfirm}
+      />
+
+      {/* Confirmation, not celebration. It says the thing happened and gets
+          out of the way. */}
+      {!!toast && (
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          style={{
+            position: 'absolute',
+            left: theme.layout.gutter,
+            right: theme.layout.gutter,
+            bottom: insets.bottom + 90,
+            paddingVertical: theme.space.md,
+            paddingHorizontal: theme.space.base,
+            borderRadius: theme.radius.full,
+            backgroundColor: theme.colour.actionPrimary,
+            alignItems: 'center',
+          }}
+          pointerEvents="none"
+        >
+          <Text variant="subhead" colour="onAction">
+            {toast}
+          </Text>
+        </MotiView>
+      )}
     </View>
   );
 }
