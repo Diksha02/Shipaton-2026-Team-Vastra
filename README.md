@@ -1,218 +1,172 @@
-# Vastra — वस्त्र
+<div align="center">
 
-**Your wardrobe, by you.**
+# Vastra
 
-You own more clothes than you wear. Not because the rest are wrong, but because
-at 7:40am you cannot see them — they are folded, behind other things, or in a
-drawer you did not open. Vastra puts everything you own where you can actually
-look at it, lets you put outfits together before you are standing half-dressed
-in front of a mirror, and shows you what to buy only when it fits what you
-already have.
+**Your whole wardrobe in your pocket.**
+*Photograph what you own, build outfits from it, see yourself wearing them before you get dressed — then buy whatever's missing in two taps.*
 
-Built for **RevenueCat Shipaton 2026**.
+`वस्त्र` — Sanskrit for *cloth*. From the Proto-Indo-European root \*wes-, "to clothe":
+the same root that gives Latin *vestis*, Spanish *vestir*, and English *wear*.
 
----
+Built for **[RevenueCat Shipaton 2026](https://revenuecat-shipaton-2026.devpost.com/)**
 
-## What it does
-
-**A wardrobe you can see.** Photograph a piece or paste a link from a shop. It
-gets tagged, cut out, and filed. No spreadsheets, no folders.
-
-**A studio, not a grid.** Pick a category, swipe through what you own, and the
-figure wears it. Outfits get built the way you actually think about them —
-visually, by trying combinations — instead of by reading a list of nouns.
-
-**Looks.** A full-bleed vertical feed of what other people are wearing.
-Double-tap to like, and tap through any post to find similar pieces you can
-actually buy.
-
-**Shopping that knows your wardrobe.** Search across your own clothes and the
-shops at once, because *"where are my black jeans"* and *"I want black jeans"*
-are the same question typed the same way. Filter by department, price, and your
-own sizes.
-
-**Try-on.** Your outfit, on you, generated rather than imagined. (In progress —
-see [Where it actually is](#where-it-actually-is).)
+</div>
 
 ---
 
-## Why the free tier works this way
+## The problem
 
-Most apps make you pay to *remove* things. Vastra never does.
+You own more clothes than you wear.
 
-You get **one permanent outfit space** and **four single-use saves**. The
-permanent space is yours forever: save, delete, save again, as often as you
-like. A single-use save is spent when you save, and deleting that outfit does
-not return it.
+Not because you dislike them — because you can't *see* them. They're folded in a
+drawer, crushed on a rail, behind a door. So every morning you reach for the same
+five things, and every so often you buy something new that turns out to be almost
+identical to something you already own.
 
-**Deleting is always free, immediate, and unconditional.** That is not a
-courtesy — it is UK GDPR Article 17, and the whole design exists to respect it.
-An earlier version of this mechanic charged to delete; it was rejected, and the
-reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md).
+The clothes aren't the problem. The interface to them is.
 
-The cost is disclosed **before** you spend it. The save sheet names the price
-and the button itself reads *"Use a single-use save"*. A consumable you discover
-after the fact is a dark pattern; the same consumable priced up front is just a
-price.
+## What Vastra does
 
-Referrals earn permanent spaces, because that is the reward anyone actually
-wants.
+**Photograph a garment.** It's auto-tagged — category, colour, material — and
+lands in your wardrobe. Or paste a product URL and we read the page instead.
 
----
+**Build an outfit in the Studio.** Your clothes hang on a ghost mannequin: an
+anonymous figure that wears what you pick. Swipe through your tops, and the
+figure changes as you go. Nobody's face, nobody's body — just the clothes,
+together, so you can see whether they actually work.
 
-## Architecture
+**See yourself in it.** Try-on renders the outfit on *you*, once. After that it's
+cached forever and free to revisit. That split is deliberate — browsing costs
+nothing, so try-on stays the moment that matters.
 
-A pnpm + Turborepo monorepo. The interesting decision is what lives in
-`packages/shared`.
+**Save it to a space.** Five free. A finalised outfit is locked from editing so
+it stays the thing you decided on — but it is always deletable, because your
+data is yours.
 
-```
-apps/
-  mobile/        Expo SDK 57 · React Native 0.86 · Expo Router · Reanimated 4
-  api/           NestJS · Drizzle · Postgres · Redis
-packages/
-  shared/        Domain rules + zod schemas — imported by BOTH app and API
-  db/            Drizzle schema and migrations
-  design/        Colour, type, motion and spacing tokens
-  providers/     Moderation, tagging, try-on, ingest — behind interfaces
-```
+**Buy what's missing.** Any catalogue piece is two taps from the retailer.
 
-**Business rules live in `packages/shared` and are imported by the client and
-the server.** The client runs them to *predict* — so it can tell you what a save
-will cost before you commit — and the server runs the same code to *enforce*.
-One implementation means the two can never disagree about what you were charged.
+## Why it should win
 
-That covers outfit spaces, department filtering, search ranking, price bands,
-size matching, and referral codes. All of it is pure, and all of it is
-unit-tested: **129 tests** across the workspace.
+| Category | Our angle |
+|---|---|
+| **HAMM** | The paywall triggers at the exact moment the fifth space fills, and shows you *the outfit you're about to lose* — not a feature list. No countdowns, no pre-ticked upsells, a real close button. Craft, not coercion. |
+| **Keep Them Coming Back** | Push is native here, not bolted on: your try-on is ready, your group hasn't played with an outfit in a week. |
+| **Design Award** | One design-token source drives every surface. Editorial serif against warm stone. Colour is spent on exactly one thing — Plus — so the purchase moment is the only chromatic surface in the app. |
+| **#BuildInPublic** | Every decision that shaped this is in [`docs/DECISIONS.md`](docs/DECISIONS.md), including the ones that were wrong. |
 
-### A few decisions worth knowing
+## The engineering worth looking at
 
-**The API holds no authentication secret.** Firebase ID tokens are verified
-against Google's public JWKS, so the server needs only a project id. Using
-`firebase-admin` would have required a service-account key — the power to mint a
-token for *any user* — in order to perform a read-only check.
+**The try-on cache is the business model.** The cache key is
+`sha256(avatar + sorted(item_ids) + MODEL_VERSION)`. Item ids are sorted, so the
+same garments in a different order hit the same entry. Cost scales with *unique
+outfits created*, never with taps — which is what makes "free try-on, any time"
+an honest promise rather than a subsidy we quietly withdraw.
 
-**Every route is closed by default.** The auth guard is registered globally, so
-a new endpoint is protected unless it explicitly says `@Public()`. Forgetting the
-decorator produces a locked endpoint, which is a bug report. The reverse produces
-an open one, which is a breach.
+**Moderation is calibrated for fashion.** This is a clothes app: swimwear,
+underwear and activewear are the product, not an edge case. A blunt NSFW
+classifier would destroy the core use case, so the thresholds fail only on
+explicit classes and let `very_suggestive` through. The policy is a pure
+function with tests pinning it, because it is the single most consequential
+decision in the pipeline.
 
-**Unconfigured never means unprotected.** With no project id set, authenticated
-routes answer 503 rather than waving tokens through. That is the failure that
-otherwise looks exactly like success in production.
+**URL ingestion can't be turned against us.** Users paste a link and we fetch it
+server-side, which is a confused deputy waiting to happen. Private IP ranges,
+carrier-grade NAT, cloud metadata endpoints and IPv4-mapped IPv6 bypasses are
+all blocked before a socket opens. Fixture-based tests; CI never touches a live
+retailer.
 
-**The moderation gate is in the read path**, not in the screens. No component
-can accidentally render an unmoderated or blocked post, because the only way to
-read posts already filters them.
+**Purchases are idempotent by construction.** RevenueCat retries on any non-2xx,
+so duplicate deliveries are normal traffic. `rc_event_id` is UNIQUE, and a
+nightly reconciliation repairs any drift — a dropped webhook must never cost
+someone something they paid for.
 
----
+**The garment layer is a real optimisation.** Outfit state holds ids, not
+objects, and every garment subscribes to its own slice. Changing your shoes
+re-renders the shoes and two carousel cards. Not the screen.
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| App | Expo (React Native) · TypeScript · Expo Router |
+| State | Zustand · TanStack Query |
+| Motion | Reanimated · Moti |
+| Lists | FlashList |
+| API | NestJS — modular monolith |
+| Database | Postgres 16 (Neon) · Drizzle ORM |
+| Queue | Redis · BullMQ |
+| Storage | Cloudflare R2 |
+| Auth | Clerk — phone OTP, one account per number |
+| Payments | **RevenueCat** SDK + webhooks |
+| Push | OneSignal |
+| Try-on | Google Vertex AI `virtual-try-on-001` |
+| Tagging | Ximilar · **Moderation** OpenAI + Sightengine |
+| Observability | PostHog · Sentry |
+
+Every third-party service sits behind an interface in
+[`packages/providers`](packages/providers). No service imports a vendor SDK
+directly, which is why the entire pipeline is testable with no credentials at
+all.
 
 ## Running it
 
 ```bash
 pnpm install
+cp .env.example .env        # placeholders only; see docs/CREDENTIALS.md
+pnpm env:up                 # Postgres + Redis, bound to 127.0.0.1
+pnpm --filter @vastra/db migrate
+
+pnpm --filter @vastra/mobile dev     # Expo
+pnpm --filter @vastra/api dev        # API
 ```
 
-### The app
+`pnpm check` runs typecheck, lint and tests across the workspace.
 
-```bash
-cd apps/mobile
-npx expo start --lan
+**No credentials are needed to run the app.** The mobile app, design system,
+navigation and every screen work entirely offline against mock data, and every
+provider has a fake. Only live provider calls are blocked — see
+[`docs/CREDENTIALS.md`](docs/CREDENTIALS.md).
+
+## Layout
+
+```
+apps/
+  mobile/      Expo app — Today, Studio, Outfits, You
+  api/         NestJS HTTP API
+packages/
+  shared/      zod schemas; every type is inferred, never hand-written twice
+  db/          Drizzle schema + migrations
+  design/      design tokens — colour, type, space, motion
+  providers/   moderation · tagging · try-on · ingest · storage
+docs/
+  TASKS.md         dependency-ordered work queue with phase gates
+  DECISIONS.md     append-only log, one line per decision
+  CREDENTIALS.md   what each service unlocks, and in what order
+  ASSETS.md        imagery provenance and licensing
 ```
 
-Open in Expo Go. Sign-in and purchases need a development build — both are
-native modules and are lazily loaded, so the app runs fine without them and says
-so rather than failing.
+## Where it actually stands
 
-```bash
-npx eas build --profile development --platform android
-```
+Honesty is cheaper than a surprise later.
 
-### Web preview
+**Working:** monorepo, database schema and migrations, the full provider layer
+with fakes and passing tests, API bootstrap, design system, and the mobile app —
+Today, Studio, Outfits, You, item detail and the paywall — running on mock data.
 
-Useful for looking at layouts on a phone browser without a dev build.
+**Not yet built:** live try-on, phone auth, the upload pipeline against real
+storage, and RevenueCat purchases. All are specified, interfaced and waiting on
+credentials rather than on design.
 
-```bash
-pnpm --filter @vastra/mobile exec expo export --platform web
-node apps/mobile/scripts/serve-web.mjs
-```
+**Placeholder:** garment imagery is Unsplash-licensed and cut out with U2Net
+segmentation. It ships nowhere near the store — see [`docs/ASSETS.md`](docs/ASSETS.md).
 
-It prints a LAN address. Zero dependencies — deliberately, so it cannot fail on
-a machine where `npx` cannot reach the network.
+## Team
 
-### The API
-
-```bash
-docker compose up -d          # Postgres on 55432, Redis
-pnpm --filter @vastra/db exec drizzle-kit migrate
-pnpm --filter @vastra/api dev
-```
-
-### Checks
-
-```bash
-pnpm -r run typecheck
-pnpm -r run test
-```
+Built by **Team Vastra** for RevenueCat Shipaton 2026.
+Store release must land inside 2026-07-31 → 2026-09-30.
 
 ---
 
-## Where it actually is
-
-Honest status, because a README that overstates is worse than one that is short.
-
-**Working and verified**
-
-- Wardrobe, Studio, outfit spaces with the full save/delete/migration path
-- Search, department/price/size filters, sort, wishlist, brand pages
-- Looks feed with like, report, block-a-user and delete
-- Google sign-in, end to end, on a development build
-- API: Firebase token verification, global guard, `/v1/me` provisioning
-- Account and data deletion
-- 129 tests, clean typecheck, clean Android bundle
-
-**Built, not yet verified against live services**
-
-- RevenueCat paywall, placements and Customer Center — the SDK is integrated and
-  a diagnostics screen exists to prove dashboard configuration, but a real
-  purchase has not been exercised
-- Slot grants are not yet wired to RevenueCat Virtual Currency
-
-**Not started**
-
-- Try-on. This is the headline feature and it is unvalidated — and it carries
-  the project's largest legal exposure. Read
-  [docs/legal/RISK.md](docs/legal/RISK.md) before building it.
-- Catalogue ingestion. The catalogue is 20 mock items.
-- iOS. The code is cross-platform and the config is correct, but there is no
-  Apple Developer account and Sign in with Apple is mandatory before an iOS
-  release once any third-party login is offered.
-
----
-
-## Documentation
-
-Everything is written down, including the things that went wrong.
-
-| | |
-|---|---|
-| [PROJECT.md](PROJECT.md) | The specification. Authoritative — conflicts stop work. |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Append-only log of every decision **and every mistake**, with reasoning |
-| [docs/legal/RISK.md](docs/legal/RISK.md) | Legal exposure map, and a promise-to-implementation table |
-| [docs/legal/PRIVACY.md](docs/legal/PRIVACY.md) | Privacy policy — draft, needs a solicitor |
-| [docs/legal/TERMS.md](docs/legal/TERMS.md) | Terms and EULA — draft, needs a solicitor |
-| [docs/TASKS.md](docs/TASKS.md) | Work queue with gates |
-| [docs/CREDENTIALS.md](docs/CREDENTIALS.md) | Every service, what it unblocks, and claim order |
-| [docs/HOSTING.md](docs/HOSTING.md) | A genuinely free stack, and the traps in it |
-
-`DECISIONS.md` records failures deliberately. Three examples: an accent colour
-that shipped as harsh yellow, an aurora background that banded into grey mud,
-and a `webClientId` option that was invented and would have broken sign-in
-silently. Knowing why something is the way it is includes knowing what it was
-before.
-
----
-
-## Licence
-
-Not yet licensed. All rights reserved pending release.
+<div align="center">
+<sub>Your wardrobe, by you.</sub>
+</div>
