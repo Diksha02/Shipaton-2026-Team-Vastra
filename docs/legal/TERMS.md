@@ -1,13 +1,14 @@
 # Terms of Service and End User Licence Agreement — Vastra
 
-**DRAFT — requires review by a qualified solicitor before publication.**
-Placeholders in `{{ }}` must be filled before this goes live.
+**Last updated:** 20 August 2026  
+**Effective:** 20 August 2026
 
-**Last updated:** {{ DATE }}
+These terms are a contract between you and **Vastra** ("we", "us"), created and
+operated by individual creators **Diksha Nigam** and **Ujjwal Deep**. We are not
+a limited company. By using the Vastra mobile app you agree to these terms. If
+you do not agree, do not use the app.
 
-These terms are a contract between you and {{ LEGAL ENTITY NAME }}
-({{ REGISTERED ADDRESS }}, United Kingdom). By using Vastra you agree to them.
-If you do not agree, do not use the app.
+Contact: **vastra.sup@gmail.com**.
 
 ---
 
@@ -52,24 +53,31 @@ of someone's privacy; an infringement of intellectual property; spam; or a
 photograph of another identifiable person taken or shared without their
 permission.
 
-### How we enforce this
-
-- Every posted image is **screened automatically before it appears.**
-- Every post can be **reported** by any user. Reports are reviewed and acted on
-  within **24 hours**.
-- You can **block** any user, which removes their content from your view and
-  prevents them contacting you.
-- We may remove content, suspend, or permanently terminate accounts that breach
-  these rules, **without notice**.
-
-Repeated or serious breaches mean a permanent ban. We report illegal content to
-the authorities where the law requires.
+We may remove content, suspend, or permanently terminate accounts that breach
+these rules. We report illegal content to the authorities where the law requires.
 
 ---
 
-## 5. Purchases and subscriptions
+## 5. Purchases and payment
+
+### Payment methods
+
+We accept payments through:
+
+- **Apple App Store** — purchases on iOS, under Apple’s terms. We never receive
+  your card details.
+- **Google Play** — purchases on Android, under Google’s terms. We never receive
+  your card details.
+- **RevenueCat** — manages entitlements and subscription status. We receive a
+  purchase receipt, subscription status, and an anonymous or account-linked
+  identifier — not your payment card data.
+
+We do **not** take card payments directly (no Stripe or Razorpay checkout inside
+Vastra). Store billing is required for digital subscriptions and in-app purchases
+on iOS and Android.
 
 ### Free tier
+
 Vastra is free to use. The free tier includes **one permanent outfit space** and
 **four single-use saves**.
 
@@ -82,8 +90,13 @@ be reused indefinitely.**
 > never charge for deletion, and never will.
 
 ### Paid
+
 Vastra Pro is offered as an auto-renewing subscription and as a one-off lifetime
-purchase. Prices are shown in your local currency before you buy.
+purchase where available. Outfit credit / slot packs may also be offered as
+consumable digital items. Prices are shown in your local currency before you buy.
+Sales tax or VAT may be added as required by Apple, Google, or applicable law.
+We may change prices at any time; the price you see at purchase applies to that
+transaction.
 
 - **Payment is taken by Apple or Google**, not by us, under their terms.
 - **Subscriptions renew automatically** unless cancelled at least 24 hours before
@@ -94,6 +107,7 @@ purchase. Prices are shown in your local currency before you buy.
   your behalf but cannot grant one.
 
 ### Your UK cancellation right
+
 If you are a UK consumer you normally have **14 days** to cancel a distance
 contract. By starting to use paid digital content immediately you agree to
 immediate performance and **acknowledge that you lose that cancellation right**
@@ -101,6 +115,7 @@ once delivery begins. This does not affect your rights where the content is
 faulty.
 
 ### Slot credits
+
 Purchased outfit credits are consumable digital items. They have **no cash
 value**, cannot be exchanged for money, and are not transferable between
 accounts. Unused credits are lost if your account is terminated for breach.
@@ -131,35 +146,47 @@ be out of date.
 
 We aim to keep Vastra working but do not guarantee it will be uninterrupted or
 error-free. We may change, suspend, or discontinue features. If we discontinue a
-paid feature you have already paid for, we will offer a pro-rata refund.
+paid feature you have already paid for, we will offer a fair remedy (for example
+a pro-rata refund where appropriate).
 
 ## 9. Ending this agreement
 
-**You** may stop using Vastra at any time and delete your account in the app.
+**You** may stop using Vastra at any time and delete your account in the app or
+by emailing us.
 
 **We** may suspend or terminate your account if you breach these terms, if we are
 required to by law, or if we cease operating. Except where you have breached
-these terms, we will give you reasonable notice and a chance to export your data.
+these terms, we will give you reasonable notice where we can.
 
-## 10. Liability
+## 10. Disclaimer
+
+THE SERVICES ARE PROVIDED ON AN “AS IS” AND “AS AVAILABLE” BASIS, TO THE FULLEST
+EXTENT PERMITTED BY LAW. WE DISCLAIM WARRANTIES OF MERCHANTABILITY, FITNESS FOR
+A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE APP WILL
+BE UNINTERRUPTED, SECURE, OR FREE OF ERRORS. TRY-ON AND OTHER AI OUTPUTS ARE
+ESTIMATES ONLY. THIRD-PARTY RETAILER LINKS AND PRODUCTS ARE OUTSIDE OUR CONTROL.
 
 Nothing in these terms limits our liability for death or personal injury caused
 by our negligence, for fraud, or for anything else that cannot be limited by law.
 **Your statutory rights as a consumer are not affected.**
 
-Subject to that, we are not liable for: indirect or consequential loss; loss of
-profit or data; content posted by other users; or the acts of third-party
-retailers. Our total liability is limited to the greater of **the amount you paid
-us in the 12 months before the claim** and **£50**.
+## 11. Limitations of liability
 
-Vastra is provided "as is" to the extent the law permits.
+Subject to section 10, we are not liable for: indirect or consequential loss;
+loss of profit, revenue, or data; content posted by other users; or the acts of
+third-party retailers. Our total liability is limited to the greater of **the
+amount you paid us in the 12 months before the claim** and **£50**.
 
-## 11. Changes
+Some jurisdictions do not allow certain limitations; if those laws apply to you,
+some limits may not apply and you may have additional rights.
+
+## 12. Changes
 
 We may change these terms. If a change is material we will tell you in the app
-before it takes effect. Continuing to use Vastra afterwards means you accept it.
+before it takes effect where practicable. Continuing to use Vastra afterwards
+means you accept it.
 
-## 12. Law and disputes
+## 13. Law and disputes
 
 These terms are governed by the **laws of England and Wales**, and the courts of
 England and Wales have jurisdiction.
@@ -168,6 +195,11 @@ If you live elsewhere in the UK or in the EU, you keep the protection of the
 mandatory consumer laws of your country of residence, and may bring proceedings
 there.
 
-## 13. Contact
+Before formal proceedings, please contact vastra.sup@gmail.com so we can try to
+resolve the issue informally. These terms do not require binding international
+arbitration.
 
-{{ support@yourdomain }} · {{ LEGAL ENTITY NAME }}, {{ REGISTERED ADDRESS }}
+## 14. Contact
+
+**Vastra** — Diksha Nigam and Ujjwal Deep (individual creators)  
+vastra.sup@gmail.com

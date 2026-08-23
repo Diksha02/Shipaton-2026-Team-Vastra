@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vastra — Terms &amp; Privacy</title>
+  <meta name="description" content="Terms of Service and Privacy Policy for the Vastra wardrobe app." />
+  <style>
+    :root {
+      --bg: #f7f4f0;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --accent: #292524;
+      --surface: #ffffff;
+      --max: 42rem;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #efe8df 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #e8ebe6 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.55;
+      font-size: 1.05rem;
+    }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    header {
+      margin-bottom: 2.25rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(1.85rem, 5vw, 2.35rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0 0 0.75rem;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0;
+    }
+
+    nav.toc {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 1.1rem 1.25rem;
+      margin: 0 0 2.5rem;
+    }
+
+    nav.toc h2 {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+      font-weight: 600;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+
+    nav.toc ol {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    nav.toc li { margin: 0.35rem 0; }
+    nav.toc a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    nav.toc a:hover { border-bottom-color: var(--ink); }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 0.85rem;
+      letter-spacing: -0.015em;
+      scroll-margin-top: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 0.5rem;
+      font-weight: 600;
+    }
+
+    p, li { color: var(--ink); }
+    p { margin: 0.7rem 0; }
+    ul, ol { padding-left: 1.25rem; margin: 0.5rem 0 0.9rem; }
+    li { margin: 0.35rem 0; }
+
+    .muted { color: var(--muted); }
+    strong { font-weight: 650; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 1rem 0;
+      background: var(--surface);
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #fafaf9;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .caps {
+      font-size: 0.92rem;
+      letter-spacing: 0.01em;
+    }
+
+    a { color: var(--accent); }
+    a:hover { text-decoration: underline; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .jump {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      padding: 0.65rem 0;
+      margin: 0 0 1.5rem;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 0.8rem;
+    }
+    .jump a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.35rem 0.65rem;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .jump a:hover { color: var(--ink); border-color: #d6d3d1; }
+
+    @media (max-width: 480px) {
+      body { font-size: 1rem; }
+      .wrap { padding: 1.75rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="jump" aria-label="Quick links">
+      <a href="#terms">Terms of Service</a>
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <header>
+      <p class="brand">वस्त्र · Vastra</p>
+      <h1>Terms of Service &amp; Privacy Policy</h1>
+      <p class="meta">Last updated: 20 August 2026 · Effective: 20 August 2026</p>
+      <p class="meta" style="margin-top: 0.75rem">
+        Operated by Diksha Nigam and Ujjwal Deep (individual creators).
+        Contact:
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>.
+      </p>
+    </header>
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Table of contents</h2>
+      <ol>
+        <li><a href="#terms">Terms of Service</a>
+          <ol>
+            <li><a href="#who-can-use">Who can use Vastra</a></li>
+            <li><a href="#licence">Your licence</a></li>
+            <li><a href="#your-content">Your content</a></li>
+            <li><a href="#community">Community rules</a></li>
+            <li><a href="#purchases">Purchases and payment</a></li>
+            <li><a href="#try-on">Try-on and AI features</a></li>
+            <li><a href="#shopping">Shopping links</a></li>
+            <li><a href="#availability">Availability</a></li>
+            <li><a href="#ending">Ending this agreement</a></li>
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="#liability">Limitations of liability</a></li>
+            <li><a href="#changes-terms">Changes</a></li>
+            <li><a href="#governing-law">Governing law &amp; disputes</a></li>
+          </ol>
+        </li>
+        <li><a href="#privacy">Privacy Policy</a>
+          <ol>
+            <li><a href="#who-we-are">Who we are</a></li>
+            <li><a href="#what-we-collect">What we collect</a></li>
+            <li><a href="#why-we-use">Why we use it</a></li>
+            <li><a href="#biometric">Biometric / try-on photos</a></li>
+            <li><a href="#storage">Storage &amp; processors</a></li>
+            <li><a href="#retention">Retention &amp; deletion</a></li>
+            <li><a href="#your-rights">Your rights</a></li>
+            <li><a href="#children">Children</a></li>
+            <li><a href="#security">Security</a></li>
+          </ol>
+        </li>
+        <li><a href="#contact">Contact us</a></li>
+      </ol>
+    </nav>
+
+    <!-- ========== TERMS ========== -->
+    <section id="terms">
+      <h2>Terms of Service</h2>
+      <p>
+        These terms are a contract between you and <strong>Vastra</strong>
+        (“we”, “us”), created and operated by individual creators
+        <strong>Diksha Nigam</strong> and <strong>Ujjwal Deep</strong>. We are not
+        a limited company. By using the Vastra mobile app (“Services”) you agree
+        to them. If you do not agree, do not use the app.
+      </p>
+      <p class="muted">
+        Contact:
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>.
+      </p>
+
+      <h3 id="who-can-use">1. Who can use Vastra</h3>
+      <p>
+        You must be at least <strong>13</strong>, and at least <strong>16</strong>
+        if you are in the UK or EU. If you are under 18 you confirm a parent or
+        guardian agrees to these terms on your behalf.
+      </p>
+
+      <h3 id="licence">2. Your licence</h3>
+      <p>
+        We grant you a personal, non-exclusive, non-transferable, revocable licence
+        to use Vastra on devices you own, for your own non-commercial use.
+      </p>
+      <p>
+        You may not: copy, modify, reverse engineer or decompile the app; use it
+        unlawfully; scrape it; attempt to defeat its security or rate limits; or
+        resell access to it.
+      </p>
+
+      <h3 id="your-content">3. Your content</h3>
+      <p>
+        <strong>You keep ownership of everything you upload</strong> — garment
+        photographs, outfits, and anything you post.
+      </p>
+      <p>
+        You grant us a worldwide, royalty-free licence to host, store, reproduce
+        and display your content <strong>solely to operate the app for you</strong>.
+        For content you post publicly, that licence extends to showing it to other
+        users. The licence ends when you delete the content, except for copies we
+        must keep to meet a legal obligation, and copies other users may already
+        have saved.
+      </p>
+      <p>
+        You confirm that you own or have the right to upload what you upload, and
+        that it does not infringe anyone else’s rights.
+      </p>
+
+      <h3 id="community">4. Community rules</h3>
+      <p><strong>We have zero tolerance for objectionable content and abusive behaviour.</strong></p>
+      <p>
+        You must not post content that is: sexually explicit; violent or graphic;
+        hateful, harassing, or discriminatory; illegal; defamatory; deceptive; a
+        breach of someone’s privacy; an infringement of intellectual property;
+        spam; or a photograph of another identifiable person taken or shared
+        without their permission.
+      </p>
+      <p>We may remove content, suspend, or permanently terminate accounts that breach these rules. We report illegal content to the authorities where the law requires.</p>
+
+      <h3 id="purchases">5. Purchases and payment</h3>
+
+      <h3>Payment methods</h3>
+      <p>We accept payments through the following platforms:</p>
+      <ul>
+        <li>
+          <strong>Apple App Store</strong> — for purchases on iOS. Payment is
+          processed by Apple under Apple’s terms. We never receive your card details.
+        </li>
+        <li>
+          <strong>Google Play</strong> — for purchases on Android. Payment is
+          processed by Google under Google’s terms. We never receive your card details.
+        </li>
+        <li>
+          <strong>RevenueCat</strong> — manages entitlements and subscription
+          status between the stores and our app. We receive a purchase receipt,
+          subscription status, and an anonymous or account-linked identifier —
+          not your payment card data.
+        </li>
+      </ul>
+      <p class="muted">
+        We do <strong>not</strong> take card payments directly (no Stripe or
+        Razorpay checkout inside Vastra). Store billing is required for digital
+        subscriptions and in-app purchases on iOS and Android.
+      </p>
+
+      <h3>Payment terms</h3>
+      <p>
+        Prices are shown in your local currency before you buy. You agree to pay
+        the charges then in effect. Sales tax or VAT may be added as required by
+        Apple, Google, or applicable law. We may change prices at any time; the
+        price you see at purchase is the price that applies to that transaction.
+      </p>
+
+      <h3>Payment model</h3>
+      <p>
+        Vastra is free to use. The free tier includes <strong>one permanent outfit
+        space</strong> and <strong>four single-use saves</strong>. A single-use
+        save is consumed when you save an outfit and is not returned if you later
+        delete that outfit. A permanent space is released when you delete the
+        outfit in it, and can be reused indefinitely.
+      </p>
+      <p>Paid options may include:</p>
+      <ul>
+        <li>
+          <strong>Vastra Pro</strong> — auto-renewing subscription (for example
+          monthly or yearly) for expanded features and outfit space.
+        </li>
+        <li>
+          <strong>Lifetime purchase</strong> — a one-time purchase where offered.
+        </li>
+        <li>
+          <strong>Outfit credits / slot packs</strong> — consumable digital items
+          where offered. Credits have no cash value, cannot be exchanged for money,
+          and are not transferable between accounts. Unused credits are lost if
+          your account is terminated for breach.
+        </li>
+      </ul>
+      <p>
+        <strong>Subscriptions renew automatically</strong> unless cancelled at
+        least 24 hours before the period ends. <strong>You cancel through your
+        Apple or Google account</strong>, not through us. We cannot cancel a store
+        subscription on your behalf.
+      </p>
+      <p>
+        <strong>Deleting your own content is always free, immediate and
+        unconditional.</strong> We never charge for deletion.
+      </p>
+
+      <h3>Refunds and cancellation</h3>
+      <p>
+        <strong>Refunds are handled by Apple and Google</strong> under their
+        refund policies. We can help you contact them but cannot grant a store
+        refund ourselves.
+      </p>
+      <p>
+        If you are a UK consumer you normally have 14 days to cancel a distance
+        contract. By starting to use paid digital content immediately you agree
+        to immediate performance and acknowledge that you may lose that
+        cancellation right once delivery begins. This does not affect your rights
+        where the content is faulty.
+      </p>
+      <p>
+        For billing errors or access problems, email
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>. We will
+        help resolve technical issues; resolution may not always mean a refund.
+      </p>
+
+      <h3 id="try-on">6. Try-on and AI features</h3>
+      <p>
+        Try-on generates an image using artificial intelligence. It is an
+        <strong>approximation, not a fitting</strong>. Garments may not look the
+        same in reality. We make no promise about fit, size, colour accuracy, or
+        suitability.
+      </p>
+      <p>
+        Try-on requires your <strong>separate, explicit consent</strong> and stays
+        off until you give it. You can withdraw at any time. See the Privacy
+        Policy for how we handle those photographs.
+      </p>
+
+      <h3 id="shopping">7. Shopping links</h3>
+      <p>
+        Vastra shows items from third-party retailers. <strong>We may earn a
+        commission when you buy through those links.</strong> We do not sell those
+        items. Your purchase is a contract with the retailer, under their terms,
+        and we are not responsible for the product, its price, its delivery, or
+        their customer service. Prices and availability shown in Vastra may be
+        out of date.
+      </p>
+
+      <h3 id="availability">8. Availability</h3>
+      <p>
+        We aim to keep Vastra working but do not guarantee uninterrupted or
+        error-free service. We may change, suspend, or discontinue features. If we
+        discontinue a paid feature you have already paid for, we will offer a
+        fair remedy (for example a pro-rata refund where appropriate).
+      </p>
+
+      <h3 id="ending">9. Ending this agreement</h3>
+      <p>
+        <strong>You</strong> may stop using Vastra at any time and delete your
+        account in the app or by emailing us.
+      </p>
+      <p>
+        <strong>We</strong> may suspend or terminate your account if you breach
+        these terms, if required by law, or if we cease operating. Except where
+        you have breached these terms, we will give reasonable notice where we can.
+      </p>
+
+      <h3 id="disclaimer">10. Disclaimer</h3>
+      <p class="caps">
+        THE SERVICES ARE PROVIDED ON AN “AS IS” AND “AS AVAILABLE” BASIS, TO THE
+        FULLEST EXTENT PERMITTED BY LAW. WE DISCLAIM WARRANTIES OF
+        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+        WE DO NOT WARRANT THAT THE APP WILL BE UNINTERRUPTED, SECURE, OR FREE OF
+        ERRORS. TRY-ON AND OTHER AI OUTPUTS ARE ESTIMATES ONLY. THIRD-PARTY
+        RETAILER LINKS AND PRODUCTS ARE OUTSIDE OUR CONTROL. NOTHING IN THESE
+        TERMS LIMITS LIABILITY THAT CANNOT BE LIMITED UNDER UK LAW, INCLUDING FOR
+        DEATH OR PERSONAL INJURY CAUSED BY NEGLIGENCE OR FOR FRAUD. YOUR
+        STATUTORY RIGHTS AS A CONSUMER ARE NOT AFFECTED.
+      </p>
+
+      <h3 id="liability">11. Limitations of liability</h3>
+      <p class="caps">
+        SUBJECT TO THE PARAGRAPH ABOVE, WE ARE NOT LIABLE FOR INDIRECT OR
+        CONSEQUENTIAL LOSS; LOSS OF PROFIT, REVENUE, OR DATA; CONTENT POSTED BY
+        OTHER USERS; OR THE ACTS OF THIRD-PARTY RETAILERS. OUR TOTAL LIABILITY TO
+        YOU FOR ANY CLAIM ARISING FROM THE SERVICES IS LIMITED TO THE GREATER OF
+        (A) THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS BEFORE THE CLAIM AND
+        (B) FIFTY POUNDS STERLING (£50). SOME JURISDICTIONS DO NOT ALLOW CERTAIN
+        LIMITATIONS; IF THOSE LAWS APPLY TO YOU, SOME LIMITS MAY NOT APPLY AND YOU
+        MAY HAVE ADDITIONAL RIGHTS.
+      </p>
+
+      <h3 id="changes-terms">12. Changes</h3>
+      <p>
+        We may change these terms. If a change is material we will tell you in the
+        app before it takes effect where practicable. Continuing to use Vastra
+        afterwards means you accept it.
+      </p>
+
+      <h3 id="governing-law">13. Governing law and disputes</h3>
+      <p>
+        These terms are governed by the <strong>laws of England and Wales</strong>.
+        The courts of England and Wales have jurisdiction. If you live elsewhere
+        in the UK or in the EU, you keep the protection of the mandatory consumer
+        laws of your country of residence, and may bring proceedings there.
+      </p>
+      <p>
+        Before formal proceedings, please contact us at
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a> so we can
+        try to resolve the issue informally.
+      </p>
+      <p class="muted">
+        These terms do not require binding international arbitration.
+      </p>
+    </section>
+
+    <!-- ========== PRIVACY ========== -->
+    <section id="privacy">
+      <h2>Privacy Policy</h2>
+      <p>
+        This policy explains how Vastra stores, uses, and protects personal data.
+        It supports compliance with UK GDPR and the Data Protection Act 2018.
+      </p>
+
+      <h3 id="who-we-are">1. Who we are</h3>
+      <p>
+        Vastra is a personal wardrobe app created and operated by individual
+        creators <strong>Diksha Nigam</strong> and <strong>Ujjwal Deep</strong>.
+        We are not a limited company. We are the <strong>data controllers</strong>
+        for the personal data described here.
+      </p>
+      <ul>
+        <li><strong>Creators:</strong> Diksha Nigam and Ujjwal Deep</li>
+        <li><strong>Privacy contact:</strong> <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a></li>
+      </ul>
+      <p>
+        You may complain to the Information Commissioner’s Office
+        (<a href="https://ico.org.uk" rel="noopener">ico.org.uk</a>, 0303 123 1113).
+      </p>
+
+      <h3>The short version</h3>
+      <ul>
+        <li>Your wardrobe lives <strong>on your device</strong> by default. We do not need an account for you to use it.</li>
+        <li>We do <strong>not sell</strong> your personal data, and we do not share it with advertisers.</li>
+        <li>We do <strong>not</strong> use your photographs to train AI models.</li>
+        <li>You can <strong>delete</strong> anything you have saved, at any time, for free. Deletion is never behind a payment.</li>
+      </ul>
+
+      <h3 id="what-we-collect">2. What we collect</h3>
+      <p><strong>Without an account</strong></p>
+      <ul>
+        <li>Wardrobe content you create (garment photos, outfits, names) — primarily on device</li>
+        <li>Basic diagnostics: app version, device model, OS, crash reports</li>
+      </ul>
+      <p><strong>If you sign in (Google)</strong></p>
+      <ul>
+        <li>Firebase user ID, email, and display name / profile picture if provided by Google</li>
+        <li>We never receive your Google password</li>
+        <li>Referral codes we generate or that you use</li>
+      </ul>
+      <p><strong>If you buy something</strong></p>
+      <ul>
+        <li>Purchase receipt and subscription status via Apple/Google and RevenueCat</li>
+        <li>We never receive your card details</li>
+        <li>We do not take card payments directly (no Stripe or Razorpay checkout in Vastra)</li>
+      </ul>
+      <p><strong>If you use try-on</strong></p>
+      <ul>
+        <li>A photograph of you that you choose to provide (may be treated as biometric information in some places). Separate explicit consent is required; try-on stays off until you give it.</li>
+      </ul>
+      <p><strong>If you post to the Looks feed</strong></p>
+      <ul>
+        <li>The image and any caption, plus moderation results</li>
+      </ul>
+
+      <h3 id="why-we-use">3. Why we use it (UK GDPR)</h3>
+      <table>
+        <thead>
+          <tr><th>What</th><th>Why</th><th>Legal basis</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Wardrobe and outfits</td><td>Provide the app</td><td>Contract</td></tr>
+          <tr><td>Account identifiers</td><td>Sync across devices</td><td>Contract</td></tr>
+          <tr><td>Purchases</td><td>Deliver what you paid for; tax records</td><td>Contract / legal obligation</td></tr>
+          <tr><td>Diagnostics</td><td>Keep the app working</td><td>Legitimate interests</td></tr>
+          <tr><td>Moderation</td><td>Safety and store rules</td><td>Legitimate interests / legal obligation</td></tr>
+          <tr><td>Referral codes</td><td>Operate the referral reward</td><td>Contract</td></tr>
+          <tr><td>Try-on photos</td><td>Generate try-on images for you</td><td>Explicit consent (Art. 9)</td></tr>
+          <tr><td>Marketing email (if sent)</td><td>Tell you about the app</td><td>Consent</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="biometric">4. Biometric / try-on photographs</h3>
+      <p>
+        If — and only if — you enable try-on and give explicit consent, we process
+        a photograph you supply solely to generate a try-on image at your request.
+      </p>
+      <p>
+        Our AI processor is <strong>Google Cloud Vertex AI</strong>, acting under
+        contract. They are not permitted to use your image to train their models
+        for their own purposes. <strong>We never sell, lease, trade, or profit from
+        biometric information.</strong>
+      </p>
+      <p>We destroy try-on photographs and derived biometric identifiers at the earliest of:</p>
+      <ol>
+        <li>when you withdraw consent or delete the photograph;</li>
+        <li>when you delete your account;</li>
+        <li>when the purpose has been satisfied; or</li>
+        <li><strong>three (3) years</strong> after your last interaction with us.</li>
+      </ol>
+      <p>
+        <strong>How to withdraw.</strong> Email
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>, or delete
+        your try-on photo in the app. This destroys the image and disables try-on.
+        There is no charge, and no delay.
+      </p>
+
+      <h3 id="storage">5. Storage architecture and processors</h3>
+      <p>Production data is handled through these systems:</p>
+      <table>
+        <thead>
+          <tr><th>Provider</th><th>Purpose</th><th>Region (typical)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>On-device storage</td><td>Local wardrobe when unsigned-in</td><td>Your device</td></tr>
+          <tr><td>Google Firebase</td><td>Authentication</td><td>US / EU</td></tr>
+          <tr><td>Neon</td><td>Application database</td><td>EU (preferred)</td></tr>
+          <tr><td>Cloudflare R2</td><td>Image object storage</td><td>Global edge</td></tr>
+          <tr><td>RevenueCat</td><td>Subscriptions / entitlements</td><td>US</td></tr>
+          <tr><td>Google Cloud Vertex AI</td><td>Try-on generation</td><td>US</td></tr>
+          <tr><td>Sentry / PostHog (when enabled)</td><td>Crashes / analytics</td><td>EU preferred</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Some providers process data in the United States. Where they do, we rely on
+        appropriate UK transfer mechanisms (for example the UK IDTA or UK Addendum
+        to the EU SCCs) and a transfer risk assessment.
+      </p>
+      <p>
+        <strong>Access control.</strong> Access is limited to authenticated users
+        for their own data and to authorised operators under least privilege.
+        Data is encrypted in transit (TLS) and at rest.
+      </p>
+      <p>
+        <strong>We do not sell personal data</strong> and do not “share” it for
+        cross-context behavioural advertising under California law. Affiliate
+        retailer taps do not pass your name, email, or account id to the retailer.
+      </p>
+
+      <h3 id="retention">6. Retention and deletion</h3>
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Retention</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Wardrobe and outfits</td><td>Until you delete them, or up to 12 months after account deletion completes</td></tr>
+          <tr><td>Account record</td><td>Until you delete your account</td></tr>
+          <tr><td>Try-on photographs</td><td>Per the biometric schedule above</td></tr>
+          <tr><td>Purchase records</td><td>6 years (UK tax)</td></tr>
+          <tr><td>Moderation records</td><td>12 months</td></tr>
+          <tr><td>Crash reports</td><td>90 days</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Users may request erasure under GDPR Article 17. Email
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>.
+      </p>
+
+      <h3 id="your-rights">7. Your rights</h3>
+      <p>
+        Under UK GDPR you may: access, correct, erase, restrict or object to
+        processing, request portability, and withdraw consent. California
+        residents additionally have rights to know, delete, correct, and opt out
+        of sale/sharing — we do not sell or share in that sense.
+      </p>
+      <p>
+        <strong>How to exercise them.</strong> Email
+        <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>.
+        We respond within <strong>one month</strong> (UK) or <strong>45 days</strong>
+        (California). Exercising rights is free.
+      </p>
+
+      <h3 id="children">8. Children</h3>
+      <p>
+        Vastra is not for children under 13. In the UK/EU you must be at least 16
+        to consent to optional processing such as try-on. We do not knowingly
+        collect children’s data; contact us to request deletion if you believe we have.
+      </p>
+
+      <h3 id="security">9. Security and incidents</h3>
+      <p>
+        We use encryption, access controls, and provider-native durability. No
+        system is perfectly secure. We will notify you and the ICO of a personal
+        data breach where the law requires it.
+      </p>
+
+      <h3>10. Changes</h3>
+      <p>
+        If we change this policy materially we will tell you in the app before the
+        change takes effect where practicable.
+      </p>
+    </section>
+
+    <section id="contact">
+      <h2>Contact us</h2>
+      <p>
+        For complaints, privacy rights, billing help, or questions about these
+        documents:
+      </p>
+      <p>
+        <strong>Vastra</strong> — Diksha Nigam and Ujjwal Deep (individual creators)<br />
+        Email: <a href="mailto:vastra.sup@gmail.com">vastra.sup@gmail.com</a>
+      </p>
+      <p>
+        By using Vastra you acknowledge that you have read and understood these
+        Terms of Service and this Privacy Policy.
+      </p>
+    </section>
+
+    <footer>
+      <p>© 2026 Diksha Nigam and Ujjwal Deep · Vastra</p>
+    </footer>
+  </div>
+</body>
+</html>

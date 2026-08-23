@@ -57,6 +57,10 @@ function RootStack() {
               can back out of, not a place in the navigation hierarchy. */}
           <Stack.Screen name="sign-in" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen
+            name="legal"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
             name="post-new"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />

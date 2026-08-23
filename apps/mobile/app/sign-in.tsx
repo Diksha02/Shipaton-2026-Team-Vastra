@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Platform, Pressable, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aurora } from '../src/components/Aurora';
 import { GoogleMark } from '../src/components/GoogleMark';
@@ -60,6 +60,10 @@ export default function SignInScreen() {
   function leave() {
     if (router.canGoBack()) router.back();
     else router.replace('/(tabs)');
+  }
+
+  function openLegal() {
+    router.push('/legal');
   }
 
   async function handleGoogle() {
@@ -215,19 +219,11 @@ export default function SignInScreen() {
           <Enter delay={STAGGER * 6}>
             <Text variant="caption" colour="tertiary" align="center" style={{ lineHeight: 17 }}>
               By continuing you agree to our{' '}
-              <Text
-                variant="caption"
-                colour="secondary"
-                onPress={() => void Linking.openURL('https://vastra.app/terms')}
-              >
+              <Text variant="caption" colour="secondary" onPress={openLegal}>
                 Terms
               </Text>{' '}
               and{' '}
-              <Text
-                variant="caption"
-                colour="secondary"
-                onPress={() => void Linking.openURL('https://vastra.app/privacy')}
-              >
+              <Text variant="caption" colour="secondary" onPress={openLegal}>
                 Privacy Policy
               </Text>
               .

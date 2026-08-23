@@ -95,7 +95,9 @@ The developer is UK-based, so UK GDPR and the Data Protection Act 2018 apply.
 - **Apple 1.2 (user-generated content)** — the Looks feed cannot ship without: a
   content filter, a **report** mechanism, the ability to **block** users, and a
   published EULA with a **zero-tolerance policy for objectionable content**.
-  Apple rejects for this routinely, and it is currently **not built**.
+  Apple rejects for this routinely, and it is currently **not built**. Do **not**
+  promise automated pre-screening, 24-hour report handling, or blocking in the
+  public Terms/Privacy until those ship.
 - **Account deletion in-app** is mandatory on both stores. Currently **not
   built** (T32).
 - **AI content disclosure** — both stores now require declaring generative AI

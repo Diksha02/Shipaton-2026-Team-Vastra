@@ -1,22 +1,18 @@
 # Privacy Policy — Vastra
 
-**DRAFT — requires review by a qualified solicitor before publication.**
-Placeholders in `{{ }}` must be filled before this goes live.
-
-**Last updated:** {{ DATE }}
-**Effective:** {{ DATE }}
+**Last updated:** 20 August 2026  
+**Effective:** 20 August 2026
 
 ---
 
 ## Who we are
 
-Vastra ("we", "us") is a personal wardrobe app operated by {{ LEGAL ENTITY NAME }},
-{{ REGISTERED ADDRESS }}, United Kingdom{{ , company number NNNNNNNN }}.
+Vastra ("we", "us") is a personal wardrobe app created and operated by individual
+creators **Diksha Nigam** and **Ujjwal Deep**. We are not a limited company. We
+are the **data controllers** for the personal data described here.
 
-We are the **data controller** for the personal data described here.
-
-- **Privacy contact:** {{ privacy@yourdomain }}
-- **ICO registration:** {{ REGISTRATION NUMBER }}
+- **Creators:** Diksha Nigam and Ujjwal Deep
+- **Privacy contact:** vastra.sup@gmail.com
 
 If you are in the UK or EU, you have the right to complain to a supervisory
 authority. In the UK that is the Information Commissioner's Office
@@ -52,7 +48,8 @@ authority. In the UK that is the Information Commissioner's Office
 ### If you buy something
 Purchases are processed by **Apple** or **Google**, and managed through
 **RevenueCat**. We receive a purchase receipt, subscription status and an
-anonymous identifier. **We never receive your card details.**
+anonymous or account-linked identifier. **We never receive your card details.**
+We do not take card payments directly (no Stripe or Razorpay checkout in Vastra).
 
 ### If you post to the Looks feed
 - The image you post and any caption.
@@ -100,7 +97,7 @@ consent, we process a photograph of you that you supply.
 **Why.** Solely to generate an image showing how a garment would look on you, at
 your request. For no other purpose.
 
-**Who we share it with.** Our AI processing provider, {{ Google Cloud Vertex AI }},
+**Who we share it with.** Our AI processing provider, **Google Cloud Vertex AI**,
 acting as our processor under contract. They are **not** permitted to use your
 image for their own purposes or to train their models.
 
@@ -115,8 +112,9 @@ the **earliest** of:
 3. when the purpose for collection has been satisfied; or
 4. **three (3) years** after your last interaction with us.
 
-**How to withdraw.** Settings → Your photo → Delete. This destroys the image and
-disables try-on. There is no charge, and no delay.
+**How to withdraw.** Email vastra.sup@gmail.com, or delete your try-on photo in
+the app. This destroys the image and disables try-on. There is no charge, and no
+delay.
 
 ---
 
@@ -127,12 +125,13 @@ instructions.
 
 | Provider | What for | Where |
 |---|---|---|
+| On-device storage | Local wardrobe when unsigned-in | Your device |
 | Google Firebase | Authentication | US / EU |
-| {{ Neon }} | Database | {{ EU }} |
-| {{ Cloudflare R2 }} | Image storage | Global edge |
+| Neon | Database | EU (preferred) |
+| Cloudflare R2 | Image storage | Global edge |
 | RevenueCat | Subscription management | US |
-| {{ Google Cloud Vertex AI }} | Try-on generation | US |
-| {{ Sentry / PostHog }} | Crash reporting and analytics | EU |
+| Google Cloud Vertex AI | Try-on generation | US |
+| Sentry / PostHog (when enabled) | Crash reporting and analytics | EU preferred |
 
 We also disclose data where we are legally required to, or to establish or defend
 legal claims.
@@ -177,9 +176,8 @@ If you are a California resident you additionally have the rights to **know**,
 **delete**, **correct**, and to **opt out of sale or sharing** — though we do
 neither.
 
-**How to exercise them.** In the app: Settings → Privacy & data. Or email
-{{ privacy@yourdomain }}. We respond within **one month** (UK) or **45 days**
-(California). Exercising your rights is free.
+**How to exercise them.** Email vastra.sup@gmail.com. We respond within
+**one month** (UK) or **45 days** (California). Exercising your rights is free.
 
 ---
 
@@ -203,4 +201,11 @@ personal data breach where the law requires it.
 ## Changes
 
 If we change this policy materially we will tell you in the app before the change
-takes effect.
+takes effect where practicable.
+
+---
+
+## Contact
+
+**Vastra** — Diksha Nigam and Ujjwal Deep (individual creators)  
+vastra.sup@gmail.com
