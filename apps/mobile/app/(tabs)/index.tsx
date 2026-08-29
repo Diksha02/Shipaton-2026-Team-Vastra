@@ -5,21 +5,28 @@ import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CommunityLooks } from '../../src/components/CommunityLooks';
 import { LockedSection } from '../../src/components/LockedSection';
 import { Text } from '../../src/components/Text';
 import {
   BRAND_KIND_LABEL,
   brandMoments,
-  communityLooks,
   formatPrice,
-  itemsByIds,
   trending,
   type BrandMoment,
   type MockItem,
 } from '../../src/mock/data';
 import { useTheme } from '../../src/theme/ThemeProvider';
 
-function SectionHeader({ title, action }: { title: string; action?: string }) {
+function SectionHeader({
+  title,
+  action,
+  onAction,
+}: {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+}) {
   const theme = useTheme();
   return (
     <View
@@ -32,8 +39,10 @@ function SectionHeader({ title, action }: { title: string; action?: string }) {
       }}
     >
       <Text variant="title2">{title}</Text>
-      {!!action && (
-        <Pressable hitSlop={8}>
+      {/* An action with nowhere to go is worse than no action: it reads as
+          broken. Only rendered when it actually does something. */}
+      {!!action && !!onAction && (
+        <Pressable hitSlop={8} onPress={onAction} accessibilityRole="button" accessibilityLabel={action}>
           <Text variant="subhead" colour="tertiary">
             {action}
           </Text>
@@ -47,6 +56,7 @@ function SectionHeader({ title, action }: { title: string; action?: string }) {
 function BrandCard({ moment, index }: { moment: BrandMoment; index: number }) {
   const theme = useTheme();
   const isFree = moment.kind === 'free_tryon';
+  const router = useRouter();
 
   return (
     <MotiView
@@ -54,7 +64,11 @@ function BrandCard({ moment, index }: { moment: BrandMoment; index: number }) {
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ type: 'timing', duration: theme.duration.base, delay: staggerDelay(index) }}
     >
-      <Pressable>
+      <Pressable
+        onPress={() => router.push({ pathname: '/brand/[slug]', params: { slug: moment.slug } })}
+        accessibilityRole="button"
+        accessibilityLabel={`${moment.brand}: ${moment.headline}${moment.sponsored ? '. Sponsored' : ''}`}
+      >
         <View
           style={{
             width: 260,
@@ -97,9 +111,30 @@ function BrandCard({ moment, index }: { moment: BrandMoment; index: number }) {
           </View>
 
           <View style={{ padding: theme.space.base, gap: 2 }}>
-            <Text variant="overline" colour="tertiary">
-              {moment.brand}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}>
+              <Text variant="overline" colour="tertiary">
+                {moment.brand}
+              </Text>
+              {/* Paid placements are labelled at the placement itself, in plain
+                  language. The UK CAP Code and the FTC both require the label to
+                  be visible up front — not on the destination, and not hidden
+                  behind an info tap. */}
+              {moment.sponsored && (
+                <View
+                  style={{
+                    paddingHorizontal: 5,
+                    paddingVertical: 1,
+                    borderRadius: theme.radius.sm,
+                    borderWidth: theme.borderWidth.hairline,
+                    borderColor: theme.colour.border,
+                  }}
+                >
+                  <Text variant="micro" colour="tertiary">
+                    AD
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text variant="headline">{moment.headline}</Text>
             <Text variant="caption" colour="tertiary">
               {moment.detail}
@@ -151,32 +186,6 @@ function TrendingCard({ item, onPress }: { item: MockItem; onPress: () => void }
   );
 }
 
-/** Illustrative preview behind the locked OOTD section. */
-function LookStrip() {
-  const theme = useTheme();
-  return (
-    <View style={{ flexDirection: 'row', gap: theme.space.sm, padding: theme.space.md }}>
-      {communityLooks.map((look) => (
-        <View key={look.id} style={{ flex: 1, gap: theme.space.xs }}>
-          <View style={{ flexDirection: 'row', height: 120, borderRadius: theme.radius.md, overflow: 'hidden', gap: 1 }}>
-            {itemsByIds(look.itemIds).map((item) => (
-              <Image
-                key={item.id}
-                source={item.image}
-                style={{ flex: 1, height: '100%' }}
-                contentFit="contain"
-              />
-            ))}
-          </View>
-          <Text variant="caption" colour="tertiary" numberOfLines={1}>
-            {look.handle}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -218,6 +227,19 @@ export default function HomeScreen() {
           <Text variant="overline" colour="tertiary" style={{ marginTop: theme.space.xs }}>
             by you
           </Text>
+
+          {/* Search sits *on* the masthead rather than replacing it. The
+              wordmark stays centred and undisturbed; the affordance is where a
+              thumb reaches, and the row keeps its title-page reading. */}
+          <Pressable
+            onPress={() => router.push('/search')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Search"
+            style={{ position: 'absolute', right: theme.layout.gutter, top: theme.space.lg + 6 }}
+          >
+            <Feather name="search" size={20} color={theme.colour.textPrimary} />
+          </Pressable>
         </View>
 
         <View style={{ paddingHorizontal: theme.layout.gutter }}>
@@ -230,7 +252,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <SectionHeader title="From brands" action="All" />
+          <SectionHeader title="From brands" action="All" onAction={() => router.push('/shop')} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -243,7 +265,7 @@ export default function HomeScreen() {
         </View>
 
         <View>
-          <SectionHeader title="Trending" action="Shop" />
+          <SectionHeader title="Trending" action="Shop" onAction={() => router.push('/shop')} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -255,14 +277,17 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Locked (§2.2): visible, illustrative, never functional and never sold. */}
-        <View style={{ paddingHorizontal: theme.layout.gutter, gap: theme.space.base }}>
-          <LockedSection
-            title="What others are wearing"
-            blurb="Outfit videos from people whose style you follow, and the pieces that make them."
-            preview={<LookStrip />}
+        {/* Locked (§2.2): illustrative, never functional, never sold. */}
+        <View>
+          <SectionHeader
+            title="Looks"
+            action="See all"
+            onAction={() => router.push('/looks')}
           />
+          <CommunityLooks onOpen={() => router.push('/looks')} />
+        </View>
 
+        <View style={{ paddingHorizontal: theme.layout.gutter, gap: theme.space.base }}>
           <LockedSection
             title="Connect your brands"
             blurb="Link the labels you already wear. Early access to drops, and try before anything ships."

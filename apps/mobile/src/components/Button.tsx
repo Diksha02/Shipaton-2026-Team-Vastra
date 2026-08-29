@@ -1,6 +1,7 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { MotiPressable } from 'moti/interactions';
 import { useMemo } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { Text } from './Text';
 
@@ -40,6 +41,12 @@ export function Button({
 
   const inactive = disabled || loading;
 
+  // Only the accent surface is a gradient. A flat saturated block is what made
+  // the old amber read as harsh; a short warm→cool travel across the same
+  // surface gives it depth without turning a button into decoration. Primary
+  // actions stay monochrome — see the note above.
+  const gradient = variant === 'accent' ? theme.colour.accentGradient : null;
+
   const animate = useMemo(
     () =>
       ({ pressed }: { pressed: boolean }) => {
@@ -58,7 +65,8 @@ export function Button({
       transition={{ type: 'timing', duration: theme.duration.instant }}
       style={{ width: fullWidth ? '100%' : undefined, opacity: inactive ? 0.45 : 1 }}
     >
-      <View
+      <Surface
+        gradient={gradient}
         style={{
           backgroundColor: palette.bg,
           borderColor: palette.border,
@@ -73,13 +81,41 @@ export function Button({
         }}
       >
         {loading ? (
-          <ActivityIndicator size="small" color={theme.colour.textOnAction} />
+          <ActivityIndicator
+            size="small"
+            color={variant === 'accent' ? theme.colour.textOnAccent : theme.colour.textOnAction}
+          />
         ) : (
           <Text variant="button" colour={palette.fg}>
             {label}
           </Text>
         )}
-      </View>
+      </Surface>
     </MotiPressable>
+  );
+}
+
+/** A View, or a LinearGradient when two stops are supplied. Keeps the layout
+ *  style identical either way so the gradient cannot shift the button. */
+function Surface({
+  gradient,
+  style,
+  children,
+}: {
+  gradient: readonly [string, string] | null;
+  style: ViewStyle;
+  children: React.ReactNode;
+}) {
+  if (!gradient) return <View style={style}>{children}</View>;
+  return (
+    <LinearGradient
+      colors={[gradient[0], gradient[1]]}
+      // Diagonal: a vertical ramp on a pill reads as a bevel, which looks dated.
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={style}
+    >
+      {children}
+    </LinearGradient>
   );
 }

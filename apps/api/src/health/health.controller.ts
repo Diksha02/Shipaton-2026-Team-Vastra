@@ -1,9 +1,11 @@
 import { Controller, Get, Inject } from '@nestjs/common';
+import { Public } from '../auth/auth.guard';
 import { DEFAULT_FLAGS } from '@vastra/shared';
 import { ENV } from '../config/config.module';
 import { integrationStatus, type Env } from '../config/env';
 import { DatabaseHealth } from '../db/db.module';
 
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

@@ -1,7 +1,24 @@
 import { create } from 'zustand';
-import { STUDIO_LAYERS, itemsForLayer, type StudioLayer } from '../mock/data';
+import {
+  FREE_SLOTS,
+  STUDIO_LAYERS,
+  itemsForLayer,
+  outfits as seedOutfits,
+  type MockOutfit,
+  type StudioLayer,
+} from '../mock/data';
 
 export type OutfitLayers = Record<StudioLayer, string | null>;
+
+/** Below this an outfit is a garment, not a look. Mirrors the disabled state of
+ *  the Save button. */
+export const MIN_PIECES = 2;
+
+export type SaveResult = 'saved' | 'full' | 'too_few';
+
+/** Outfit cards give the name a single line. Past this it is truncated on the
+ *  card anyway, so the cap is honesty rather than a restriction. */
+export const OUTFIT_NAME_MAX = 40;
 
 const EMPTY: OutfitLayers = {
   top: null,
@@ -20,10 +37,51 @@ const OPTIONAL: ReadonlySet<StudioLayer> = new Set(['headwear', 'bag', 'accessor
 interface OutfitState {
   layers: OutfitLayers;
   activeLayer: StudioLayer;
+  /** Saved outfits, oldest first. Seeded from mock data for design review. */
+  saved: MockOutfit[];
   setLayer: (layer: StudioLayer, itemId: string | null) => void;
   setActiveLayer: (layer: StudioLayer) => void;
   shuffle: () => void;
   reset: () => void;
+  /** Commits whatever is on the stage to a free slot. Returns why it refused
+   *  rather than throwing — the caller decides between paywall and a hint. */
+  saveCurrent: () => SaveResult;
+  /** Frees the slot the outfit occupied. Always permitted, for any outfit,
+   *  finalised or not — see the note above `deleteOutfit`. */
+  deleteOutfit: (id: string) => void;
+  /** Retitles a saved outfit. Permitted on finalised outfits: §4 locks the
+   *  garments, not the label — see the note above `renameOutfit`. */
+  renameOutfit: (id: string, name: string) => void;
+}
+
+/** Garments in paint order, so a saved outfit lists head-to-toe rather than in
+ *  whatever order the layers happen to be declared. */
+function composedItemIds(layers: OutfitLayers): string[] {
+  return STUDIO_LAYERS.map((layer) => layers[layer]).filter(
+    (id): id is string => id !== null,
+  );
+}
+
+const AUTO_NAME = /^Outfit (\d+)$/;
+
+/**
+ * The placeholder name for a save the user has not named yet.
+ *
+ * Counts the user's own auto-named outfits, not slot positions: with four seeded
+ * outfits present, a first save is "Outfit 1", not "Outfit 5". Numbering by slot
+ * makes the very first outfit a user ever saves look like their fifth.
+ *
+ * Continues past the highest number in use rather than filling gaps, so deleting
+ * "Outfit 2" and saving again cannot produce a second outfit with a name the
+ * user already recognises as something else.
+ */
+function nextOutfitName(saved: readonly MockOutfit[]): string {
+  const highest = saved.reduce((max, outfit) => {
+    const match = AUTO_NAME.exec(outfit.name);
+    return match?.[1] === undefined ? max : Math.max(max, Number(match[1]));
+  }, 0);
+
+  return `Outfit ${highest + 1}`;
 }
 
 /**
@@ -36,10 +94,11 @@ interface OutfitState {
  * changing shoes re-renders the shoes panel and nothing else. No list reloads,
  * no stage rebuild, no cascade.
  */
-export const useOutfitStore = create<OutfitState>((set) => ({
+export const useOutfitStore = create<OutfitState>((set, get) => ({
   // Ids must track src/mock/data.ts. w1 sweatshirt, w4 jean, w8 trainers.
   layers: { ...EMPTY, top: 'w1', bottom: 'w4', footwear: 'w8' },
   activeLayer: 'top',
+  saved: [...seedOutfits],
 
   setLayer: (layer, itemId) =>
     set((state) =>
@@ -67,6 +126,63 @@ export const useOutfitStore = create<OutfitState>((set) => ({
     }),
 
   reset: () => set({ layers: { ...EMPTY } }),
+
+  saveCurrent: () => {
+    const { layers, saved } = get();
+    const itemIds = composedItemIds(layers);
+
+    if (itemIds.length < MIN_PIECES) return 'too_few';
+    if (saved.length >= FREE_SLOTS) return 'full';
+
+    const outfit: MockOutfit = {
+      id: `saved-${Date.now()}`,
+      name: nextOutfitName(saved),
+      itemIds,
+      // Saved outfits are edit-locked but always deletable (PROJECT.md §4).
+      finalised: true,
+    };
+
+    set({ saved: [...saved, outfit] });
+    return 'saved';
+  },
+
+  /**
+   * There is deliberately no `finalised` check here.
+   *
+   * A finalised outfit is immutable — it cannot be edited — but it remains
+   * deletable, and deleting it frees its slot. Edit-locking is the scarcity
+   * mechanic; deletion-locking is not, and must never become one (PROJECT.md
+   * §4, UK GDPR Art. 17). Do not add a guard to this function.
+   */
+  deleteOutfit: (id) =>
+    set((state) => {
+      const saved = state.saved.filter((outfit) => outfit.id !== id);
+      return saved.length === state.saved.length ? state : { saved };
+    }),
+
+  /**
+   * Renaming a finalised outfit is allowed, and is not a hole in the edit-lock.
+   * The §4 invariant is specific: an outfit is immutable in its items — "no
+   * adding, removing or reordering" — and `name` is a separate field from them.
+   * Locking the garments is the scarcity mechanic; locking the label would just
+   * be a typo the user cannot fix.
+   *
+   * A blank name is a no-op rather than an error. Clearing the field and tapping
+   * away means "never mind", not "leave this card with no title".
+   */
+  renameOutfit: (id, name) =>
+    set((state) => {
+      const trimmed = name.trim().slice(0, OUTFIT_NAME_MAX);
+      if (trimmed === '') return state;
+
+      const target = state.saved.find((outfit) => outfit.id === id);
+      if (!target || target.name === trimmed) return state;
+
+      const saved = state.saved.map((outfit) =>
+        outfit.id === id ? { ...outfit, name: trimmed } : outfit,
+      );
+      return { saved };
+    }),
 }));
 
 /**
@@ -92,4 +208,12 @@ export function useFilledCount(): number {
     for (const layer of STUDIO_LAYERS) if (state.layers[layer]) count += 1;
     return count;
   });
+}
+
+export function useSavedOutfits(): MockOutfit[] {
+  return useOutfitStore((state) => state.saved);
+}
+
+export function useSlotsLeft(): number {
+  return useOutfitStore((state) => Math.max(0, FREE_SLOTS - state.saved.length));
 }

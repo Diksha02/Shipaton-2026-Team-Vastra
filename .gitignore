@@ -51,3 +51,8 @@ scratch/
 # party game). Kept locally for reference; the live spec is PROJECT.md.
 /PLAN.md
 /alright-hi-how-are-enumerated-pond.md
+
+# Firebase per-app config. Not secret, but no reason to publish them; supplied
+# to EAS as file secrets instead (see docs/CREDENTIALS.md).
+apps/mobile/google-services.json
+apps/mobile/GoogleService-Info.plist

@@ -16,6 +16,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoadingScreen } from '../src/components/LoadingScreen';
 import { PhoneFrame } from '../src/components/PhoneFrame';
+import { useAuth } from '../src/store/auth';
+import { useEntitlements } from '../src/store/entitlements';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 
 void SplashScreen.preventAutoHideAsync();
@@ -41,6 +43,28 @@ function RootStack() {
           />
           <Stack.Screen name="item/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="wardrobe-grid" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen
+            name="add"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="shop" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="saved" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="intake" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="delete-account" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="search" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="brand/[slug]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="diagnostics" options={{ animation: 'slide_from_right' }} />
+          {/* Presented, not pushed: signing in is a decision you step into and
+              can back out of, not a place in the navigation hierarchy. */}
+          <Stack.Screen name="sign-in" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen
+            name="legal"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="post-new"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
         </Stack>
       </PhoneFrame>
     </>
@@ -62,6 +86,18 @@ export default function RootLayout() {
     // never leave the user staring at a splash screen forever.
     if (loaded || error) void SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // Configure RevenueCat and Firebase once, at start. Neither blocks render:
+  // the wardrobe, Studio, outfits and feed all work signed out and unpaid, so a
+  // failure here degrades one feature rather than the app.
+  const configurePurchases = useEntitlements((s) => s.configure);
+  const configureAuth = useAuth((s) => s.configure);
+  useEffect(() => {
+    void configurePurchases();
+    // After purchases: signing in calls Purchases.logIn, which needs the SDK to
+    // already be configured to attach the alias to the right project.
+    void configureAuth();
+  }, [configurePurchases, configureAuth]);
 
   // No artificial hold. An earlier version waited 900ms so the brand moment
   // registered; it read as slowness, which is worse than being unseen.
