@@ -49,6 +49,7 @@ function RootStack() {
           />
           <Stack.Screen name="shop" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="saved" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="intake" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="delete-account" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="search" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="brand/[slug]" options={{ animation: 'slide_from_right' }} />
