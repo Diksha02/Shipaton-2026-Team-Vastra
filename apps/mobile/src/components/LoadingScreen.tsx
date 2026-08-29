@@ -128,7 +128,7 @@ export function BrandIntro({
     <Animated.View
       pointerEvents="none"
       style={[
-        StyleSheet.absoluteFillObject,
+        StyleSheet.absoluteFill,
         styles.overlay,
         { backgroundColor: theme.colour.bg },
         overlayStyle,
