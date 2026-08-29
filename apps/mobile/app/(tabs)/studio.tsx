@@ -20,6 +20,7 @@ import { PLACEMENTS } from '../../src/purchases/config';
 import { useOpenPaywall } from '../../src/purchases/usePaywall';
 import { useIsPro } from '../../src/store/entitlements';
 import { useSavedOutfits, useSpaces } from '../../src/store/savedOutfits';
+import { useWear } from '../../src/store/wear';
 import { useOnboardingStore } from '../../src/store/onboarding';
 import { useActiveLayer, useFilledCount, useLayer, useOutfitStore } from '../../src/store/outfit';
 import { useTheme } from '../../src/theme/ThemeProvider';
@@ -172,6 +173,7 @@ export default function StudioScreen() {
   const pieceCount = useFilledCount();
   const shuffle = useOutfitStore((state) => state.shuffle);
   const reset = useOutfitStore((state) => state.reset);
+  const markWorn = useWear((s) => s.markWorn);
 
   const isPro = useIsPro();
   const spaces = useSpaces(isPro);
@@ -269,6 +271,24 @@ export default function StudioScreen() {
           onPress={() => {
             if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             shuffle();
+          }}
+        />
+        {/* One tap logs the whole outfit. Asking someone to log garments one at
+            a time is asking them to do data entry, and nobody does data entry
+            twice — which would leave Forgotten permanently wrong. */}
+        <QuietAction
+          icon="check"
+          label="Wore this"
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+            const layers = useOutfitStore.getState().layers;
+            const ids = Object.values(layers).filter((id): id is string => Boolean(id));
+            if (ids.length === 0) return;
+            markWorn(ids);
+            setToast(`Logged ${ids.length} ${ids.length === 1 ? 'piece' : 'pieces'}`);
+            setTimeout(() => setToast(null), 1800);
           }}
         />
         <QuietAction

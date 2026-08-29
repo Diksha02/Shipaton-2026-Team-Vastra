@@ -42,6 +42,7 @@ export default function TabsLayout() {
   const screens = [
     { name: 'index', label: 'Today', icon: 'home' },
     { name: 'looks', label: 'Looks', icon: 'play-circle' },
+    { name: 'wardrobe', label: 'Wardrobe', icon: 'grid' },
     { name: 'studio', label: 'Studio', icon: 'sliders' },
     { name: 'outfits', label: 'Outfits', icon: 'layers' },
     { name: 'profile', label: 'You', icon: 'user' },

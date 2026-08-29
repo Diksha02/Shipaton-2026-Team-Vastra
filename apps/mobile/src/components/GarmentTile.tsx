@@ -17,6 +17,9 @@ export interface GarmentTileProps {
   /** Off inside the Studio picker, where the tile is a control for dressing the
    *  figure and a wishlist heart would be meaningless on clothes you own. */
   wishlistable?: boolean;
+  /** Replaces the price line. Inside the Wardrobe, "In your wardrobe" on every
+   *  tile is a line of text that tells you where you already know you are. */
+  subtitle?: string;
 }
 
 export function GarmentTile({
@@ -25,6 +28,7 @@ export function GarmentTile({
   onPress,
   selected = false,
   wishlistable = false,
+  subtitle,
 }: GarmentTileProps) {
   const theme = useTheme();
   const saved = useIsWishlisted(item.id);
@@ -129,9 +133,10 @@ export function GarmentTile({
             {item.title}
           </Text>
           <Text variant="caption" colour="tertiary">
-            {item.priceMinor === null
-              ? 'In your wardrobe'
-              : formatPrice(item.priceMinor, item.currency)}
+            {subtitle ??
+              (item.priceMinor === null
+                ? 'In your wardrobe'
+                : formatPrice(item.priceMinor, item.currency))}
           </Text>
         </View>
       </Pressable>

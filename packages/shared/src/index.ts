@@ -15,6 +15,7 @@ export * from './flags';
 export * from './ids';
 export * from './referral-code';
 export * from './slots';
+export * from './wear';
 
 export * from './schemas/asset';
 export * from './schemas/billing';
