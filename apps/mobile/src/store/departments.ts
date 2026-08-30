@@ -16,9 +16,9 @@ interface DepartmentState {
  *
  * Persisted, because "I shop menswear" is a stable fact about a person and
  * re-picking it every session is exactly the kind of repeated decision that
- * makes an app tiring. Not asked during onboarding, though: an extra question
- * before anyone has seen the product costs more than it earns, and the filter
- * is discoverable the moment they open Shop.
+ * makes an app tiring. Preference onboarding (`/preferences`) sets this once
+ * up front by writing into this store — filters remain the single source of
+ * truth rather than a second preference model.
  *
  * Deliberately multi-select. Plenty of people shop across departments in a
  * single session — for themselves, a partner, and a child — and forcing one

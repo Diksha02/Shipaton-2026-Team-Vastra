@@ -7,6 +7,7 @@
  * a field, that is a bug in this package, not something to patch on one side.
  */
 
+export * from './preference-onboarding';
 export * from './api';
 export * from './catalogue-query';
 export * from './enums';

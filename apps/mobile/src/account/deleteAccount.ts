@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDepartments } from '../store/departments';
 import { useOnboardingStore } from '../store/onboarding';
 import { usePosts } from '../store/posts';
+import { usePreferences } from '../store/preferences';
 import { useRecentSearches } from '../store/recentSearches';
 import { useSavedOutfits } from '../store/savedOutfits';
 import { useSizeProfile } from '../store/sizeProfile';
@@ -91,6 +92,12 @@ export async function deleteEverything(): Promise<DeleteResult> {
     usePosts.setState({ posts: [] });
     // Back to a first-run app, which is what "deleted" should feel like.
     useOnboardingStore.setState({ seenWalkthrough: false });
+    usePreferences.setState({
+      completed: false,
+      email: '',
+      marketingConsent: false,
+      marketingConsentAt: null,
+    });
     useAuth.setState({ user: null });
   } catch {
     problems.push('The app could not fully reset. Restart it to finish.');
