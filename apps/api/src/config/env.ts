@@ -32,8 +32,18 @@ export const envSchema = z.object({
   R2_ENDPOINT: z.string().optional(),
   R2_PUBLIC_BASE_URL: z.string().optional(),
 
-  CLERK_SECRET_KEY: z.string().optional(),
-  CLERK_WEBHOOK_SIGNING_SECRET: z.string().optional(),
+  /**
+   * Firebase Auth. Note what is *not* here: no service-account key, no private
+   * key, no secret of any kind.
+   *
+   * Verifying a Firebase ID token needs only the project id — the signature is
+   * checked against Google's public JWKS, and the project id is what the `iss`
+   * and `aud` claims must match. So the API can authenticate every request while
+   * holding nothing worth stealing. Adding firebase-admin with a service account
+   * would hand this process the ability to mint tokens for any user, which is a
+   * far larger blast radius than it needs.
+   */
+  FIREBASE_PROJECT_ID: z.string().optional(),
 
   REVENUECAT_SECRET_API_KEY: z.string().optional(),
   REVENUECAT_WEBHOOK_SECRET: z.string().optional(),
@@ -83,7 +93,7 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
 export function integrationStatus(env: Env) {
   return {
     storage: Boolean(env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_ENDPOINT),
-    auth: Boolean(env.CLERK_SECRET_KEY),
+    auth: Boolean(env.FIREBASE_PROJECT_ID),
     purchases: Boolean(env.REVENUECAT_WEBHOOK_SECRET),
     push: Boolean(env.ONESIGNAL_APP_ID && env.ONESIGNAL_REST_API_KEY),
     moderation: Boolean(env.OPENAI_API_KEY),

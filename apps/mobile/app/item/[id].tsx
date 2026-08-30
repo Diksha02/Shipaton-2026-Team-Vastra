@@ -2,16 +2,19 @@ import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MotiView } from 'moti';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
 import { Text } from '../../src/components/Text';
 import {
   CATEGORY_LABEL,
+  STUDIO_LAYERS,
   catalogue,
   formatPrice,
   wardrobe,
+  type StudioLayer,
 } from '../../src/mock/data';
+import { useOutfitStore } from '../../src/store/outfit';
 import { useTheme } from '../../src/theme/ThemeProvider';
 
 export default function ItemDetailScreen() {
@@ -120,7 +123,32 @@ export default function ItemDetailScreen() {
           borderTopColor: theme.colour.border,
         }}
       >
-        <Button label={item.owned ? 'Add to an outfit' : 'View at retailer'} />
+        <Button
+          label={item.owned ? 'Wear this' : 'View at retailer'}
+          onPress={() => {
+            if (item.owned) {
+              // Not every category is a Studio layer — dresses, swimwear and
+              // underwear have no slot on the figure yet. Check rather than
+              // cast, or tapping one silently writes a layer that cannot render.
+              const layer = STUDIO_LAYERS.find((candidate) => candidate === item.category);
+              if (!layer) {
+                Alert.alert(
+                  'Not on the figure yet',
+                  `${CATEGORY_LABEL[item.category]} cannot be styled in the Studio for now.`,
+                );
+                return;
+              }
+              useOutfitStore.getState().setLayer(layer as StudioLayer, item.id);
+              router.push('/(tabs)/studio');
+              return;
+            }
+            if (item.retailerUrl) {
+              void Linking.openURL(item.retailerUrl);
+            } else {
+              Alert.alert('No link yet', 'This piece has no retailer page attached.');
+            }
+          }}
+        />
         {!item.owned && (
           <Text variant="caption" colour="tertiary" align="center">
             Opens {item.brand}. Two taps from here, as promised.

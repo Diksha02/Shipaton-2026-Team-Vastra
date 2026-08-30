@@ -13,14 +13,18 @@
  */
 import {
   ASSET_KINDS,
+  BASE_REUSABLE_SLOTS,
+  BASE_SINGLE_USE_CREDITS,
   ENTITLEMENT_KINDS,
-  FREE_SLOTS_DEFAULT,
   ITEM_CATEGORIES,
   ITEM_COLOURS,
+  DEPARTMENTS,
   ITEM_SOURCES,
   MODERATION_STATUSES,
   MODERATION_VERDICTS,
   OUTFIT_STATUSES,
+  SLOT_GRANT_REASONS,
+  SLOT_KINDS,
   TAGGING_STATUSES,
   TRYON_STATUSES,
 } from '@vastra/shared';
@@ -29,6 +33,7 @@ import {
   bigint,
   boolean,
   char,
+  check,
   index as pgIndex,
   integer,
   jsonb,
@@ -49,10 +54,13 @@ export const moderationVerdictEnum = pgEnum('moderation_verdict', MODERATION_VER
 export const itemSourceEnum = pgEnum('item_source', ITEM_SOURCES);
 export const itemCategoryEnum = pgEnum('item_category', ITEM_CATEGORIES);
 export const itemColourEnum = pgEnum('item_colour', ITEM_COLOURS);
+export const departmentEnum = pgEnum('department', DEPARTMENTS);
 export const taggingStatusEnum = pgEnum('tagging_status', TAGGING_STATUSES);
 export const outfitStatusEnum = pgEnum('outfit_status', OUTFIT_STATUSES);
 export const tryonStatusEnum = pgEnum('tryon_status', TRYON_STATUSES);
 export const entitlementKindEnum = pgEnum('entitlement_kind', ENTITLEMENT_KINDS);
+export const slotKindEnum = pgEnum('slot_kind', SLOT_KINDS);
+export const slotGrantReasonEnum = pgEnum('slot_grant_reason', SLOT_GRANT_REASONS);
 
 // --- shared column builders ------------------------------------------------
 
@@ -66,26 +74,55 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').primaryKey(),
-    clerkId: text('clerk_id').notNull(),
+    /** Firebase Auth `uid`. The only identity claim we trust, and it arrives on
+     *  every request as a verified ID token — never as a request body field. */
+    firebaseUid: text('firebase_uid').notNull(),
     /**
      * SHA-256 of the E.164 phone number, peppered server-side. Enforces one
      * account per number (F1) without storing a number we would then have to
      * protect. Never reversible to a contact.
+     *
+     * Nullable: Firebase sign-in with Apple or Google yields no phone number, so
+     * F1 can only be enforced for accounts that actually have one. The unique
+     * index below is partial for exactly that reason.
      */
-    phoneHash: text('phone_hash').notNull(),
+    phoneHash: text('phone_hash'),
     handle: text('handle').notNull(),
     avatarAssetId: uuid('avatar_asset_id'),
     /** Explicit consent to AI processing of the avatar. Null ⇒ try-on blocked. */
     avatarConsentAt: timestamp('avatar_consent_at', { withTimezone: true }),
-    freeSlotsTotal: integer('free_slots_total').notNull().default(FREE_SLOTS_DEFAULT),
+
+    /**
+     * Outfit spaces. The rule these three feed is in `@vastra/shared/slots` and
+     * is unit-tested there; this is only where the numbers live.
+     *
+     * `singleUseSpent` is never decremented. That is deliberate: a spent credit
+     * stays spent, which is what lets a deleted outfit be removed *completely*
+     * rather than retained to keep a counter honest.
+     */
+    reusableSlots: integer('reusable_slots').notNull().default(BASE_REUSABLE_SLOTS),
+    singleUseGranted: integer('single_use_granted').notNull().default(BASE_SINGLE_USE_CREDITS),
+    singleUseSpent: integer('single_use_spent').notNull().default(0),
+
+    /** Short, shareable, case-insensitive. What a referral link carries. */
+    referralCode: text('referral_code').notNull(),
+
     createdAt,
     updatedAt,
     deletedAt,
   },
   (t) => [
-    uniqueIndex('users_clerk_id_key').on(t.clerkId),
-    uniqueIndex('users_phone_hash_key').on(t.phoneHash),
+    uniqueIndex('users_firebase_uid_key').on(t.firebaseUid),
+    uniqueIndex('users_phone_hash_key')
+      .on(t.phoneHash)
+      .where(sql`${t.phoneHash} IS NOT NULL`),
     uniqueIndex('users_handle_key').on(t.handle),
+    uniqueIndex('users_referral_code_key').on(t.referralCode),
+    /** Balances must never go negative, whatever a caller believes. */
+    check(
+      'users_slot_ledger_non_negative',
+      sql`${t.reusableSlots} >= 0 AND ${t.singleUseGranted} >= 0 AND ${t.singleUseSpent} >= 0`,
+    ),
   ],
 );
 
@@ -157,6 +194,9 @@ export const items = pgTable(
     affiliateUrl: text('affiliate_url'),
     primaryAssetId: uuid('primary_asset_id').references(() => assets.id, { onDelete: 'set null' }),
     category: itemCategoryEnum('category').notNull().default('other'),
+    /** Retail section, not a claim about the shopper. `unisex` is a real
+     *  department and is returned for every filter — see `matchesDepartments`. */
+    department: departmentEnum('department').notNull().default('unisex'),
     subcategory: text('subcategory'),
     colourPrimary: itemColourEnum('colour_primary'),
     attributes: jsonb('attributes').$type<Record<string, unknown>>().notNull().default({}),
@@ -183,6 +223,7 @@ export const items = pgTable(
       .where(sql`${t.externalId} IS NOT NULL`),
     pgIndex('items_owner_idx').on(t.ownerUserId, t.deletedAt),
     pgIndex('items_category_idx').on(t.category),
+    pgIndex('items_department_idx').on(t.department),
     pgIndex('items_colour_idx').on(t.colourPrimary),
   ],
 );
@@ -199,6 +240,14 @@ export const outfits = pgTable(
     name: text('name'),
     /** `finalised` outfits are immutable in composition — but always deletable. */
     status: outfitStatusEnum('status').notNull().default('draft'),
+    /**
+     * Which kind of space this outfit consumed, fixed at save time.
+     *
+     * Needed on delete: releasing a permanent space and declining to refund a
+     * single-use credit are different transitions, and the row itself is the
+     * only record of which one applies.
+     */
+    slotKind: slotKindEnum('slot_kind').notNull().default('reusable'),
     coverAssetId: uuid('cover_asset_id').references(() => assets.id, { onDelete: 'set null' }),
     finalisedAt: timestamp('finalised_at', { withTimezone: true }),
     createdAt,
@@ -225,34 +274,79 @@ export const outfitItems = pgTable(
   ],
 );
 
-// --- slots -----------------------------------------------------------------
+// --- slot grants -----------------------------------------------------------
 
 /**
- * A slot is a saveable place for a finalised outfit. Five are free.
+ * Every space a user has ever been given, and why. Append-only.
  *
- * A slot is freed when its outfit is deleted, and deleting an outfit is always
- * permitted (UK GDPR Art. 17). The scarcity mechanic is the edit-lock, never a
- * deletion-lock. This is a legal requirement — see PROJECT.md §4.
+ * The balances on `users` are what the app reads; this table is what makes them
+ * *explainable*. When someone asks why they have three permanent spaces, the
+ * answer has to be reconstructable from rows rather than asserted.
+ *
+ * `rcEventId` carries the idempotency for purchases: RevenueCat retries on any
+ * non-2xx, so duplicate deliveries are normal traffic and must never
+ * double-grant. It is null for signup and referral grants, hence the partial
+ * unique index — an unconditional one would collide every non-purchase row.
  */
-export const slots = pgTable(
-  'slots',
+export const slotGrants = pgTable(
+  'slot_grants',
   {
     id: uuid('id').primaryKey(),
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    index: integer('index').notNull(),
-    outfitId: uuid('outfit_id').references(() => outfits.id, { onDelete: 'set null' }),
-    filledAt: timestamp('filled_at', { withTimezone: true }),
+    kind: slotKindEnum('kind').notNull(),
+    /** Always positive. Revocations are a separate concern and not supported. */
+    amount: integer('amount').notNull(),
+    reason: slotGrantReasonEnum('reason').notNull(),
+    /** The referral that produced this grant, when `reason = 'referral'`. */
+    referralId: uuid('referral_id'),
+    rcEventId: text('rc_event_id'),
+    productId: text('product_id'),
     createdAt,
     updatedAt,
   },
   (t) => [
-    uniqueIndex('slots_user_index_key').on(t.userId, t.index),
-    /** An outfit occupies at most one slot. */
-    uniqueIndex('slots_outfit_key')
-      .on(t.outfitId)
-      .where(sql`${t.outfitId} IS NOT NULL`),
+    pgIndex('slot_grants_user_idx').on(t.userId),
+    uniqueIndex('slot_grants_rc_event_id_key')
+      .on(t.rcEventId)
+      .where(sql`${t.rcEventId} IS NOT NULL`),
+    check('slot_grants_amount_positive', sql`${t.amount} > 0`),
+  ],
+);
+
+// --- referrals -------------------------------------------------------------
+
+/**
+ * One reward per referred account, enforced by the database rather than by
+ * application care. `referredUserId` is UNIQUE — a new account can be credited
+ * to exactly one referrer, once, forever.
+ *
+ * `rewardedAt` is set only after the referred account clears whatever
+ * qualification we require, so creating an account is not itself the payout.
+ * Without that, the cheapest way to farm permanent spaces is a burner email.
+ */
+export const referrals = pgTable(
+  'referrals',
+  {
+    id: uuid('id').primaryKey(),
+    referrerUserId: uuid('referrer_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    referredUserId: uuid('referred_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** The code as typed, kept for support questions. */
+    code: text('code').notNull(),
+    rewardedAt: timestamp('rewarded_at', { withTimezone: true }),
+    createdAt,
+    updatedAt,
+  },
+  (t) => [
+    uniqueIndex('referrals_referred_user_key').on(t.referredUserId),
+    pgIndex('referrals_referrer_idx').on(t.referrerUserId),
+    /** Referring yourself is the first thing anyone tries. */
+    check('referrals_no_self_referral', sql`${t.referrerUserId} <> ${t.referredUserId}`),
   ],
 );
 
@@ -350,7 +444,7 @@ export const taxonomyMap = pgTable(
 export const usersRelations = relations(users, ({ many, one }) => ({
   assets: many(assets),
   outfits: many(outfits),
-  slots: many(slots),
+  slotGrants: many(slotGrants),
   entitlements: many(entitlements),
   avatar: one(assets, { fields: [users.avatarAssetId], references: [assets.id] }),
 }));
@@ -373,9 +467,21 @@ export const outfitItemsRelations = relations(outfitItems, ({ one }) => ({
   item: one(items, { fields: [outfitItems.itemId], references: [items.id] }),
 }));
 
-export const slotsRelations = relations(slots, ({ one }) => ({
-  user: one(users, { fields: [slots.userId], references: [users.id] }),
-  outfit: one(outfits, { fields: [slots.outfitId], references: [outfits.id] }),
+export const slotGrantsRelations = relations(slotGrants, ({ one }) => ({
+  user: one(users, { fields: [slotGrants.userId], references: [users.id] }),
+}));
+
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referrer: one(users, {
+    fields: [referrals.referrerUserId],
+    references: [users.id],
+    relationName: 'referrer',
+  }),
+  referred: one(users, {
+    fields: [referrals.referredUserId],
+    references: [users.id],
+    relationName: 'referred',
+  }),
 }));
 
 export const assetsRelations = relations(assets, ({ one, many }) => ({

@@ -6,6 +6,8 @@ CREATE TYPE "public"."item_source" AS ENUM('user_photo', 'user_url', 'catalogue'
 CREATE TYPE "public"."moderation_status" AS ENUM('pending', 'pass', 'review', 'fail');--> statement-breakpoint
 CREATE TYPE "public"."moderation_verdict" AS ENUM('pass', 'fail', 'review');--> statement-breakpoint
 CREATE TYPE "public"."outfit_status" AS ENUM('draft', 'finalised');--> statement-breakpoint
+CREATE TYPE "public"."slot_grant_reason" AS ENUM('signup', 'referral', 'purchase', 'promo', 'support');--> statement-breakpoint
+CREATE TYPE "public"."slot_kind" AS ENUM('reusable', 'single_use');--> statement-breakpoint
 CREATE TYPE "public"."tagging_status" AS ENUM('pending', 'tagged', 'failed', 'manual');--> statement-breakpoint
 CREATE TYPE "public"."tryon_status" AS ENUM('pending', 'processing', 'ready', 'failed');--> statement-breakpoint
 CREATE TABLE "assets" (
@@ -85,6 +87,7 @@ CREATE TABLE "outfits" (
 	"user_id" uuid NOT NULL,
 	"name" text,
 	"status" "outfit_status" DEFAULT 'draft' NOT NULL,
+	"slot_kind" "slot_kind" DEFAULT 'reusable' NOT NULL,
 	"cover_asset_id" uuid,
 	"finalised_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -92,14 +95,29 @@ CREATE TABLE "outfits" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "slots" (
+CREATE TABLE "referrals" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"referrer_user_id" uuid NOT NULL,
+	"referred_user_id" uuid NOT NULL,
+	"code" text NOT NULL,
+	"rewarded_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "referrals_no_self_referral" CHECK ("referrals"."referrer_user_id" <> "referrals"."referred_user_id")
+);
+--> statement-breakpoint
+CREATE TABLE "slot_grants" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"user_id" uuid NOT NULL,
-	"index" integer NOT NULL,
-	"outfit_id" uuid,
-	"filled_at" timestamp with time zone,
+	"kind" "slot_kind" NOT NULL,
+	"amount" integer NOT NULL,
+	"reason" "slot_grant_reason" NOT NULL,
+	"referral_id" uuid,
+	"rc_event_id" text,
+	"product_id" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "slot_grants_amount_positive" CHECK ("slot_grants"."amount" > 0)
 );
 --> statement-breakpoint
 CREATE TABLE "taxonomy_map" (
@@ -129,15 +147,19 @@ CREATE TABLE "tryon_renders" (
 --> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"clerk_id" text NOT NULL,
-	"phone_hash" text NOT NULL,
+	"firebase_uid" text NOT NULL,
+	"phone_hash" text,
 	"handle" text NOT NULL,
 	"avatar_asset_id" uuid,
 	"avatar_consent_at" timestamp with time zone,
-	"free_slots_total" integer DEFAULT 5 NOT NULL,
+	"reusable_slots" integer DEFAULT 1 NOT NULL,
+	"single_use_granted" integer DEFAULT 4 NOT NULL,
+	"single_use_spent" integer DEFAULT 0 NOT NULL,
+	"referral_code" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"deleted_at" timestamp with time zone
+	"deleted_at" timestamp with time zone,
+	CONSTRAINT "users_slot_ledger_non_negative" CHECK ("users"."reusable_slots" >= 0 AND "users"."single_use_granted" >= 0 AND "users"."single_use_spent" >= 0)
 );
 --> statement-breakpoint
 ALTER TABLE "assets" ADD CONSTRAINT "assets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -149,8 +171,9 @@ ALTER TABLE "outfit_items" ADD CONSTRAINT "outfit_items_outfit_id_outfits_id_fk"
 ALTER TABLE "outfit_items" ADD CONSTRAINT "outfit_items_item_id_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."items"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "outfits" ADD CONSTRAINT "outfits_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "outfits" ADD CONSTRAINT "outfits_cover_asset_id_assets_id_fk" FOREIGN KEY ("cover_asset_id") REFERENCES "public"."assets"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "slots" ADD CONSTRAINT "slots_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "slots" ADD CONSTRAINT "slots_outfit_id_outfits_id_fk" FOREIGN KEY ("outfit_id") REFERENCES "public"."outfits"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "referrals" ADD CONSTRAINT "referrals_referrer_user_id_users_id_fk" FOREIGN KEY ("referrer_user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "referrals" ADD CONSTRAINT "referrals_referred_user_id_users_id_fk" FOREIGN KEY ("referred_user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "slot_grants" ADD CONSTRAINT "slot_grants_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tryon_renders" ADD CONSTRAINT "tryon_renders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tryon_renders" ADD CONSTRAINT "tryon_renders_outfit_id_outfits_id_fk" FOREIGN KEY ("outfit_id") REFERENCES "public"."outfits"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tryon_renders" ADD CONSTRAINT "tryon_renders_avatar_asset_id_assets_id_fk" FOREIGN KEY ("avatar_asset_id") REFERENCES "public"."assets"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -167,10 +190,13 @@ CREATE INDEX "items_colour_idx" ON "items" USING btree ("colour_primary");--> st
 CREATE INDEX "moderation_results_asset_idx" ON "moderation_results" USING btree ("asset_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "outfit_items_position_key" ON "outfit_items" USING btree ("outfit_id","position");--> statement-breakpoint
 CREATE INDEX "outfits_user_idx" ON "outfits" USING btree ("user_id","deleted_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "slots_user_index_key" ON "slots" USING btree ("user_id","index");--> statement-breakpoint
-CREATE UNIQUE INDEX "slots_outfit_key" ON "slots" USING btree ("outfit_id") WHERE "slots"."outfit_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "referrals_referred_user_key" ON "referrals" USING btree ("referred_user_id");--> statement-breakpoint
+CREATE INDEX "referrals_referrer_idx" ON "referrals" USING btree ("referrer_user_id");--> statement-breakpoint
+CREATE INDEX "slot_grants_user_idx" ON "slot_grants" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "slot_grants_rc_event_id_key" ON "slot_grants" USING btree ("rc_event_id") WHERE "slot_grants"."rc_event_id" IS NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "tryon_renders_cache_key_key" ON "tryon_renders" USING btree ("cache_key");--> statement-breakpoint
 CREATE INDEX "tryon_renders_user_idx" ON "tryon_renders" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "users_clerk_id_key" ON "users" USING btree ("clerk_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "users_phone_hash_key" ON "users" USING btree ("phone_hash");--> statement-breakpoint
-CREATE UNIQUE INDEX "users_handle_key" ON "users" USING btree ("handle");
+CREATE UNIQUE INDEX "users_firebase_uid_key" ON "users" USING btree ("firebase_uid");--> statement-breakpoint
+CREATE UNIQUE INDEX "users_phone_hash_key" ON "users" USING btree ("phone_hash") WHERE "users"."phone_hash" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "users_handle_key" ON "users" USING btree ("handle");--> statement-breakpoint
+CREATE UNIQUE INDEX "users_referral_code_key" ON "users" USING btree ("referral_code");

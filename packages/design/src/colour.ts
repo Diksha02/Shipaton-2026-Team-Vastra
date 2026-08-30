@@ -47,6 +47,16 @@ export interface ColourScheme {
 
   /** Plus / paywall only. The one chromatic element in the product. */
   accent: string;
+  /**
+   * Two stops for accent surfaces, warm → cool.
+   *
+   * A gradient rather than a flat fill because a single saturated block is what
+   * made the old amber read as harsh; a slow shift across the same surface
+   * gives it depth and lets the eye settle. Kept to two stops and a short hue
+   * travel — anything wider stops looking like a material and starts looking
+   * like a rainbow.
+   */
+  accentGradient: readonly [string, string];
   accentPressed: string;
   accentSubtle: string;
   accentBorder: string;
@@ -88,11 +98,12 @@ export const lightColours: ColourScheme = {
   actionPrimary: '#1C1917',
   actionPrimaryPressed: '#44403C',
 
-  accent: '#A16207',
-  accentPressed: '#854D0E',
-  accentSubtle: '#FEF9EC',
-  accentBorder: '#FDE68A',
+  accent: '#9C5A44',
+  accentPressed: '#844835',
+  accentSubtle: '#FDF4F1',
+  accentBorder: '#F0D5CB',
   textOnAccent: '#FFFFFF',
+  accentGradient: ['#A9634A', '#8E5470'],
 
   danger: '#B91C1C',
   dangerSubtle: '#FEF2F2',
@@ -101,30 +112,45 @@ export const lightColours: ColourScheme = {
   scrim: 'rgba(28, 25, 23, 0.55)',
 };
 
+/**
+ * Dark is not light with the numbers flipped.
+ *
+ * Two things were wrong in the first version and both are corrected here:
+ *
+ *   1. bg / surface / surfaceMuted sat within a few hex points of each other,
+ *      so cards did not separate from the background at all. Dark surfaces need
+ *      *more* separation than light ones, not less — the eye discriminates
+ *      poorly at the bottom of the range.
+ *   2. `surfaceGarment` was darker than `surface`, mirroring the light theme.
+ *      That is exactly backwards: light mode needs a deeper card so a white
+ *      shirt reads, dark mode needs a lighter one so a black jacket does. Most
+ *      wardrobes are full of both.
+ */
 export const darkColours: ColourScheme = {
-  bg: '#0C0A09',
-  surface: '#1C1917',
-  surfaceMuted: '#292524',
-  surfacePressed: '#44403C',
-  surfaceGarment: '#232020',
+  bg: '#0B0A09',
+  surface: '#1C1A18',
+  surfaceMuted: '#2A2724',
+  surfacePressed: '#3A3633',
+  surfaceGarment: '#3D3936',
 
-  border: '#292524',
-  borderStrong: '#44403C',
+  border: '#332F2C',
+  borderStrong: '#4E4844',
 
   textPrimary: '#FAFAF9',
-  textSecondary: '#D6D3D1',
-  textTertiary: '#A8A29E',
-  textDisabled: '#57534E',
-  textOnAction: '#1C1917',
+  textSecondary: '#DAD6D3',
+  textTertiary: '#ABA49F',
+  textDisabled: '#635C57',
+  textOnAction: '#1C1A18',
 
   actionPrimary: '#FAFAF9',
   actionPrimaryPressed: '#D6D3D1',
 
-  accent: '#FBBF24',
-  accentPressed: '#F59E0B',
-  accentSubtle: '#2A2011',
-  accentBorder: '#57430F',
+  accent: '#DDA898',
+  accentPressed: '#C89383',
+  accentSubtle: '#2A1E1A',
+  accentBorder: '#4B3730',
   textOnAccent: '#1C1917',
+  accentGradient: ['#E3B0A0', '#C79BB4'],
 
   danger: '#F87171',
   dangerSubtle: '#2A1515',

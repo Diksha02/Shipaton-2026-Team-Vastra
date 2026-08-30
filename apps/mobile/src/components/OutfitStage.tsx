@@ -1,46 +1,64 @@
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AnimatePresence, MotiView } from 'moti';
+import { MotiView } from 'moti';
 import { memo, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
-import { wardrobe, type MockItem, type StudioLayer } from '../mock/data';
+import { COLOUR_SWATCH, wardrobe, type MockItem, type StudioLayer } from '../mock/data';
 import { useLayer } from '../store/outfit';
 import { useTheme } from '../theme/ThemeProvider';
 import { Text } from './Text';
 
 /**
  * The figure is drawn at a fixed design size and scaled to whatever space the
- * stage actually has. Laying it out in raw pixels is what made an earlier
- * version clip its own head and shoes on a 360pt phone.
+ * stage has, so it is never clipped regardless of screen height.
  */
 const FIGURE_W = 230;
 const FIGURE_H = 400;
 
-interface Zone {
+interface Part {
   left: number;
   top: number;
   width: number;
   height: number;
+  radius: number;
 }
 
 /**
- * Where each garment hangs on the figure, in design-space pixels.
+ * Body regions, in design-space pixels.
  *
- * Garments are transparent cutouts, so the garment's own silhouette is the
- * shape — nothing is clipped into a body-shaped hole. Each zone is just an area
- * to fit inside, and `contain` keeps every piece at its true proportions.
+ * INTERIM RENDERING. Garments are shown as colour on the body rather than as
+ * photographs. Flat product shots pasted onto a figure read as collage, not as
+ * clothing — the proportions are wrong, the lighting is wrong, and a folded
+ * flat-lay never looks worn.
+ *
+ * Colour keeps the thing that actually matters when composing an outfit: does
+ * this combination work together. Replaced by real draped renders when the
+ * dedicated outfit API lands.
  */
-const ZONES: Record<StudioLayer, Zone> = {
-  top: { left: 50, top: 58, width: 130, height: 128 },
-  outerwear: { left: 30, top: 52, width: 170, height: 152 },
-  bottom: { left: 66, top: 168, width: 98, height: 164 },
-  footwear: { left: 56, top: 320, width: 118, height: 58 },
-  bag: { left: 158, top: 148, width: 62, height: 74 },
-  headwear: { left: 72, top: -10, width: 86, height: 56 },
-  accessory: { left: 88, top: 18, width: 54, height: 30 },
+const PARTS: Record<StudioLayer, Part[]> = {
+  top: [
+    { left: 72, top: 62, width: 86, height: 108, radius: 22 }, // torso
+    { left: 46, top: 66, width: 24, height: 92, radius: 12 }, // left sleeve
+    { left: 160, top: 66, width: 24, height: 92, radius: 12 }, // right sleeve
+  ],
+  outerwear: [
+    { left: 36, top: 58, width: 30, height: 132, radius: 14 }, // open left panel
+    { left: 164, top: 58, width: 30, height: 132, radius: 14 }, // open right panel
+  ],
+  bottom: [
+    { left: 78, top: 170, width: 74, height: 30, radius: 12 }, // hips
+    { left: 82, top: 196, width: 28, height: 132, radius: 13 }, // left leg
+    { left: 120, top: 196, width: 28, height: 132, radius: 13 }, // right leg
+  ],
+  footwear: [
+    { left: 74, top: 328, width: 40, height: 22, radius: 10 },
+    { left: 116, top: 328, width: 40, height: 22, radius: 10 },
+  ],
+  headwear: [{ left: 88, top: 6, width: 54, height: 22, radius: 11 }],
+  accessory: [{ left: 100, top: 52, width: 30, height: 12, radius: 6 }],
+  bag: [{ left: 176, top: 150, width: 26, height: 34, radius: 8 }],
 };
 
-/** Back to front. Outerwear sits over the top; accessories sit over everything. */
+/** Painted back to front: a coat sits over a top, accessories over everything. */
 const PAINT_ORDER: StudioLayer[] = [
   'bottom',
   'top',
@@ -51,100 +69,96 @@ const PAINT_ORDER: StudioLayer[] = [
   'accessory',
 ];
 
+/** The bare body, where no garment covers it. */
+const SKIN: Part[] = [
+  { left: 92, top: 10, width: 46, height: 46, radius: 23 }, // head
+  { left: 106, top: 48, width: 18, height: 22, radius: 7 }, // neck
+  { left: 74, top: 64, width: 82, height: 104, radius: 22 }, // torso
+  { left: 48, top: 68, width: 20, height: 88, radius: 10 }, // arms
+  { left: 162, top: 68, width: 20, height: 88, radius: 10 },
+  { left: 80, top: 168, width: 70, height: 26, radius: 12 }, // hips
+  { left: 84, top: 190, width: 24, height: 140, radius: 12 }, // legs
+  { left: 122, top: 190, width: 24, height: 140, radius: 12 },
+];
+
 function useItem(layer: StudioLayer): MockItem | null {
   const id = useLayer(layer);
   return id ? (wardrobe.find((candidate) => candidate.id === id) ?? null) : null;
 }
 
 /**
- * One garment on the figure.
+ * One garment, as colour on the body.
  *
  * Subscribes to its own layer and is memoised, so changing the shoes re-renders
- * the shoes and nothing else. `AnimatePresence` with `exitBeforeEnter` makes the
- * outgoing garment leave before the incoming one arrives, rather than the two
- * crossfading through each other.
+ * the shoes and nothing else.
  */
 const Worn = memo(function Worn({ layer }: { layer: StudioLayer }) {
   const theme = useTheme();
   const item = useItem(layer);
-  const zone = ZONES[layer];
+
+  if (!item) return null;
+
+  const colour = COLOUR_SWATCH[item.colour];
 
   return (
-    <View
-      style={{ position: 'absolute', left: zone.left, top: zone.top, width: zone.width, height: zone.height }}
-      pointerEvents="none"
-    >
-      <AnimatePresence exitBeforeEnter>
-        {!!item && (
-          <MotiView
-            key={item.id}
-            from={{ opacity: 0, translateY: 12, scale: 0.94 }}
-            animate={{ opacity: 1, translateY: 0, scale: 1 }}
-            exit={{ opacity: 0, translateY: -8, scale: 0.97 }}
-            transition={{ type: 'timing', duration: theme.duration.fast }}
-            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-          >
-            <Image
-              source={item.image}
-              style={{ width: '100%', height: '100%' }}
-              // `contain`, never `cover` — a cutout cropped to fill its box is a
-              // garment with its sleeves cut off.
-              contentFit="contain"
-              cachePolicy="memory-disk"
-            />
-          </MotiView>
-        )}
-      </AnimatePresence>
-    </View>
+    <>
+      {PARTS[layer].map((part, index) => (
+        <MotiView
+          // Keyed on the garment so a swap replays the entrance — that swap is
+          // the moment the whole screen exists to produce.
+          key={`${item.id}-${index}`}
+          from={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', ...theme.spring.responsive }}
+          style={{
+            position: 'absolute',
+            left: part.left,
+            top: part.top,
+            width: part.width,
+            height: part.height,
+            borderRadius: part.radius,
+            backgroundColor: colour,
+            // A hairline is what keeps a white garment legible on a light stage
+            // and a black one on a dark stage. It was using `border`, which is
+            // so close to the surface that a white sweatshirt vanished entirely
+            // — the figure read as half-dressed. `borderStrong` is the token
+            // that actually separates.
+            borderWidth: theme.borderWidth.hairline,
+            borderColor: theme.colour.borderStrong,
+          }}
+          pointerEvents="none"
+        />
+      ))}
+    </>
   );
 });
 
-/**
- * The body underneath — head, shoulders, legs.
- *
- * Deliberately faint. It exists so the stage reads as a person even when
- * nothing is chosen, and so garments have something to hang on. It is nobody:
- * seeing yourself in an outfit is what Try-On is for.
- */
+/** The body underneath. Deliberately faint: it is nobody, and seeing yourself
+ *  in an outfit is what Try-On is for. */
 function Silhouette() {
   const theme = useTheme();
-  const skin = theme.colour.surfaceMuted;
-
-  const part = (left: number, top: number, width: number, height: number, radius: number) => (
-    <View
-      style={{
-        position: 'absolute',
-        left,
-        top,
-        width,
-        height,
-        borderRadius: radius,
-        backgroundColor: skin,
-      }}
-    />
-  );
 
   return (
-    <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} pointerEvents="none">
-      {part(92, 8, 46, 46, 23)}
-      {part(106, 46, 18, 22, 7)}
-      {part(72, 64, 86, 112, 26)}
-      {part(80, 168, 70, 26, 12)}
-      {part(84, 186, 26, 148, 13)}
-      {part(120, 186, 26, 148, 13)}
-      {part(78, 326, 34, 20, 8)}
-      {part(118, 326, 34, 20, 8)}
-    </View>
+    <>
+      {SKIN.map((part, index) => (
+        <View
+          key={index}
+          style={{
+            position: 'absolute',
+            left: part.left,
+            top: part.top,
+            width: part.width,
+            height: part.height,
+            borderRadius: part.radius,
+            backgroundColor: theme.colour.surfaceMuted,
+          }}
+          pointerEvents="none"
+        />
+      ))}
+    </>
   );
 }
 
-/**
- * The stage — a ghost mannequin.
- *
- * "Ghost mannequin" is the fashion-photography term for a garment shown as if
- * worn by an invisible person, which is exactly the model here: the figure is
- * anonymous, the clothes hang on it, and nobody's likeness is on screen.
- */
 export function OutfitStage() {
   const theme = useTheme();
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
@@ -165,13 +179,16 @@ export function OutfitStage() {
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.colour.surface,
+        // `surfaceGarment`, not `surface`. It exists precisely so clothes read
+        // against the ground: light mode needs a deeper stage so a white shirt
+        // shows, dark mode a lighter one so a black jacket does. The stage was
+        // using plain `surface` (#FFFFFF in light), against which a white
+        // garment is invisible.
+        backgroundColor: theme.colour.surfaceGarment,
       }}
     >
-      {/* A vertical wash rather than a hard-edged arch — light falling on the
-          figure, not a shape drawn behind it. */}
       <LinearGradient
-        colors={[theme.colour.surfaceMuted, theme.colour.surface]}
+        colors={[theme.colour.surfaceGarment, theme.colour.surfacePressed]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.95 }}
         style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
@@ -179,13 +196,12 @@ export function OutfitStage() {
 
       {scale > 0 && (
         <View style={{ width: FIGURE_W, height: FIGURE_H, transform: [{ scale }] }}>
-          {/* Contact shadow. Small, but it is most of what stops the figure
-              looking pasted onto the background. */}
+          {/* Contact shadow — most of what stops the figure looking pasted on. */}
           <View
             style={{
               position: 'absolute',
               left: 58,
-              top: 372,
+              top: 356,
               width: 114,
               height: 11,
               borderRadius: 999,

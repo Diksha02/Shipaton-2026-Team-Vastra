@@ -82,7 +82,7 @@ export default function PaywallScreen() {
 
           <Text variant="display">This one won't fit.</Text>
           <Text variant="callout" colour="secondary">
-            All five slots are full. Plus gives you room for every outfit you build — this one
+            Every space is full. Pro gives you room for every outfit you build — this one
             included.
           </Text>
         </MotiView>

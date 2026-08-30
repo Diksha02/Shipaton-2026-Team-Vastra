@@ -1,5 +1,5 @@
 {
-  "id": "b0548ecf-6970-40b9-b0dd-2554dd3fbdfd",
+  "id": "16e6c019-bf81-4f8a-bd16-329aafa6d6e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -763,6 +763,14 @@
           "notNull": true,
           "default": "'draft'"
         },
+        "slot_kind": {
+          "name": "slot_kind",
+          "type": "slot_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'reusable'"
+        },
         "cover_asset_id": {
           "name": "cover_asset_id",
           "type": "uuid",
@@ -853,8 +861,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.slots": {
-      "name": "slots",
+    "public.referrals": {
+      "name": "referrals",
       "schema": "",
       "columns": {
         "id": {
@@ -863,26 +871,26 @@
           "primaryKey": true,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
+        "referrer_user_id": {
+          "name": "referrer_user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "index": {
-          "name": "index",
-          "type": "integer",
+        "referred_user_id": {
+          "name": "referred_user_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "outfit_id": {
-          "name": "outfit_id",
-          "type": "uuid",
+        "code": {
+          "name": "code",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "filled_at": {
-          "name": "filled_at",
+        "rewarded_at": {
+          "name": "rewarded_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
@@ -903,17 +911,11 @@
         }
       },
       "indexes": {
-        "slots_user_index_key": {
-          "name": "slots_user_index_key",
+        "referrals_referred_user_key": {
+          "name": "referrals_referred_user_key",
           "columns": [
             {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "index",
+              "expression": "referred_user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -924,27 +926,167 @@
           "method": "btree",
           "with": {}
         },
-        "slots_outfit_key": {
-          "name": "slots_outfit_key",
+        "referrals_referrer_idx": {
+          "name": "referrals_referrer_idx",
           "columns": [
             {
-              "expression": "outfit_id",
+              "expression": "referrer_user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             }
           ],
-          "isUnique": true,
-          "where": "\"slots\".\"outfit_id\" IS NOT NULL",
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
         }
       },
       "foreignKeys": {
-        "slots_user_id_users_id_fk": {
-          "name": "slots_user_id_users_id_fk",
-          "tableFrom": "slots",
+        "referrals_referrer_user_id_users_id_fk": {
+          "name": "referrals_referrer_user_id_users_id_fk",
+          "tableFrom": "referrals",
+          "tableTo": "users",
+          "columnsFrom": [
+            "referrer_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "referrals_referred_user_id_users_id_fk": {
+          "name": "referrals_referred_user_id_users_id_fk",
+          "tableFrom": "referrals",
+          "tableTo": "users",
+          "columnsFrom": [
+            "referred_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "referrals_no_self_referral": {
+          "name": "referrals_no_self_referral",
+          "value": "\"referrals\".\"referrer_user_id\" <> \"referrals\".\"referred_user_id\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.slot_grants": {
+      "name": "slot_grants",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "slot_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "slot_grant_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "referral_id": {
+          "name": "referral_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rc_event_id": {
+          "name": "rc_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "slot_grants_user_idx": {
+          "name": "slot_grants_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "slot_grants_rc_event_id_key": {
+          "name": "slot_grants_rc_event_id_key",
+          "columns": [
+            {
+              "expression": "rc_event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"slot_grants\".\"rc_event_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "slot_grants_user_id_users_id_fk": {
+          "name": "slot_grants_user_id_users_id_fk",
+          "tableFrom": "slot_grants",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -954,25 +1096,17 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "slots_outfit_id_outfits_id_fk": {
-          "name": "slots_outfit_id_outfits_id_fk",
-          "tableFrom": "slots",
-          "tableTo": "outfits",
-          "columnsFrom": [
-            "outfit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "slot_grants_amount_positive": {
+          "name": "slot_grants_amount_positive",
+          "value": "\"slot_grants\".\"amount\" > 0"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.taxonomy_map": {
@@ -1219,8 +1353,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "clerk_id": {
-          "name": "clerk_id",
+        "firebase_uid": {
+          "name": "firebase_uid",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -1229,7 +1363,7 @@
           "name": "phone_hash",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "handle": {
           "name": "handle",
@@ -1249,12 +1383,32 @@
           "primaryKey": false,
           "notNull": false
         },
-        "free_slots_total": {
-          "name": "free_slots_total",
+        "reusable_slots": {
+          "name": "reusable_slots",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 5
+          "default": 1
+        },
+        "single_use_granted": {
+          "name": "single_use_granted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 4
+        },
+        "single_use_spent": {
+          "name": "single_use_spent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "referral_code": {
+          "name": "referral_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1278,11 +1432,11 @@
         }
       },
       "indexes": {
-        "users_clerk_id_key": {
-          "name": "users_clerk_id_key",
+        "users_firebase_uid_key": {
+          "name": "users_firebase_uid_key",
           "columns": [
             {
-              "expression": "clerk_id",
+              "expression": "firebase_uid",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1304,6 +1458,7 @@
             }
           ],
           "isUnique": true,
+          "where": "\"users\".\"phone_hash\" IS NOT NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1322,13 +1477,33 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "users_referral_code_key": {
+          "name": "users_referral_code_key",
+          "columns": [
+            {
+              "expression": "referral_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "users_slot_ledger_non_negative": {
+          "name": "users_slot_ledger_non_negative",
+          "value": "\"users\".\"reusable_slots\" >= 0 AND \"users\".\"single_use_granted\" >= 0 AND \"users\".\"single_use_spent\" >= 0"
+        }
+      },
       "isRLSEnabled": false
     }
   },
@@ -1422,6 +1597,25 @@
       "values": [
         "draft",
         "finalised"
+      ]
+    },
+    "public.slot_grant_reason": {
+      "name": "slot_grant_reason",
+      "schema": "public",
+      "values": [
+        "signup",
+        "referral",
+        "purchase",
+        "promo",
+        "support"
+      ]
+    },
+    "public.slot_kind": {
+      "name": "slot_kind",
+      "schema": "public",
+      "values": [
+        "reusable",
+        "single_use"
       ]
     },
     "public.tagging_status": {

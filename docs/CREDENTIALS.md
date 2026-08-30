@@ -75,7 +75,7 @@ accuracy. See FA-1 in docs/TASKS.md.
 
 | | Service | Get it here | Variables | Unblocks |
 |---|---|---|---|---|
-| [ ] | **RevenueCat** | <https://app.revenuecat.com/> · Expo guide <https://www.revenuecat.com/docs/getting-started/installation/expo> | `EXPO_PUBLIC_REVENUECAT_IOS_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`, `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_WEBHOOK_SECRET` | F11. **No RevenueCat purchase, no valid entry.** Creating the project also unlocks ShipKit Tier 2. |
+| [x] | **RevenueCat** (test key set) | <https://app.revenuecat.com/> · Expo guide <https://www.revenuecat.com/docs/getting-started/installation/expo> | `EXPO_PUBLIC_REVENUECAT_IOS_KEY`, `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`, `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_WEBHOOK_SECRET` | F11. **No RevenueCat purchase, no valid entry.** Creating the project also unlocks ShipKit Tier 2. |
 | [ ] | **Apple Developer** | <https://developer.apple.com/programs/enroll/> | account | Store release. $99/yr. |
 | [ ] | **Google Play** | <https://play.google.com/console/signup> | account | $25 one-time. Personal accounts created after 2023-11-13 need 12 testers for 14 consecutive days before production access — **organisation accounts are exempt**. Choose deliberately. |
 

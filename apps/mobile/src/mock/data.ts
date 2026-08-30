@@ -1,4 +1,4 @@
-import type { ItemCategory, ItemColour } from '@vastra/shared';
+import type { Department, ItemCategory, ItemColour } from '@vastra/shared';
 import type { ImageSourcePropType } from 'react-native';
 
 import acc01 from '../../assets/garments/acc-01.webp';
@@ -55,10 +55,18 @@ export interface MockItem {
   title: string;
   brand: string | null;
   category: ItemCategory;
+  /** Retail section. Owned pieces are `unisex` — we have no business assigning
+   *  a department to clothes someone already wears. */
+  department: Department;
+  /** Sizes stocked. Undefined for unsized things — bags, sunglasses — and for
+   *  pieces you already own, where the question does not arise. */
+  sizes?: string[];
   colour: ItemColour;
   priceMinor: number | null;
   currency: string;
   owned: boolean;
+  /** Where 'View at retailer' goes. Null for pieces you already own. */
+  retailerUrl: string | null;
   /** 800px transparent WebP — stage, grid, hero. */
   image: ImageSourcePropType;
   /** 240px transparent WebP — carousels and strips. */
@@ -98,32 +106,48 @@ export const CATEGORY_LABEL: Record<ItemCategory, string> = {
 };
 
 export const wardrobe: MockItem[] = [
-  { id: 'w1', title: 'Cotton Sweatshirt', brand: null, category: 'top', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, image: top07, thumb: top07Thumb },
-  { id: 'w2', title: 'Crochet Knit Top', brand: null, category: 'top', colour: 'yellow', priceMinor: null, currency: 'GBP', owned: true, image: top04, thumb: top04Thumb },
-  { id: 'w3', title: 'Lace Camisole', brand: null, category: 'top', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, image: top06, thumb: top06Thumb },
+  { id: 'w1', title: 'Cotton Sweatshirt', brand: null, category: 'top', department: 'unisex', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: top07, thumb: top07Thumb },
+  { id: 'w2', title: 'Crochet Knit Top', brand: null, category: 'top', department: 'unisex', colour: 'yellow', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: top04, thumb: top04Thumb },
+  { id: 'w3', title: 'Lace Camisole', brand: null, category: 'top', department: 'unisex', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: top06, thumb: top06Thumb },
 
-  { id: 'w4', title: 'Mid-Wash Slim Jean', brand: null, category: 'bottom', colour: 'blue', priceMinor: null, currency: 'GBP', owned: true, image: bottom03, thumb: bottom03Thumb },
-  { id: 'w5', title: 'Turn-Up Denim', brand: null, category: 'bottom', colour: 'blue', priceMinor: null, currency: 'GBP', owned: true, image: bottom04, thumb: bottom04Thumb },
+  { id: 'w4', title: 'Mid-Wash Slim Jean', brand: null, category: 'bottom', department: 'unisex', colour: 'blue', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: bottom03, thumb: bottom03Thumb },
+  { id: 'w5', title: 'Turn-Up Denim', brand: null, category: 'bottom', department: 'unisex', colour: 'blue', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: bottom04, thumb: bottom04Thumb },
 
-  { id: 'w6', title: 'Leather Biker Jacket', brand: null, category: 'outerwear', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, image: outer01, thumb: outer01Thumb },
-  { id: 'w7', title: 'Rust Bomber', brand: null, category: 'outerwear', colour: 'brown', priceMinor: null, currency: 'GBP', owned: true, image: outer06, thumb: outer06Thumb },
+  { id: 'w6', title: 'Leather Biker Jacket', brand: null, category: 'outerwear', department: 'unisex', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: outer01, thumb: outer01Thumb },
+  { id: 'w7', title: 'Rust Bomber', brand: null, category: 'outerwear', department: 'unisex', colour: 'brown', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: outer06, thumb: outer06Thumb },
 
-  { id: 'w8', title: 'White Leather Trainers', brand: null, category: 'footwear', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, image: shoe02, thumb: shoe02Thumb },
-  { id: 'w9', title: 'Court Sneaker', brand: null, category: 'footwear', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, image: shoe03, thumb: shoe03Thumb },
+  { id: 'w8', title: 'White Leather Trainers', brand: null, category: 'footwear', department: 'unisex', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: shoe02, thumb: shoe02Thumb },
+  { id: 'w9', title: 'Court Sneaker', brand: null, category: 'footwear', department: 'unisex', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: shoe03, thumb: shoe03Thumb },
 
-  { id: 'w10', title: 'Woven Leather Tote', brand: null, category: 'bag', colour: 'brown', priceMinor: null, currency: 'GBP', owned: true, image: bag01, thumb: bag01Thumb },
+  { id: 'w10', title: 'Woven Leather Tote', brand: null, category: 'bag', department: 'unisex', colour: 'brown', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: bag01, thumb: bag01Thumb },
 
-  { id: 'w11', title: 'Round Sunglasses', brand: null, category: 'accessory', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, image: acc01, thumb: acc01Thumb },
+  { id: 'w11', title: 'Round Sunglasses', brand: null, category: 'accessory', department: 'unisex', colour: 'black', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: acc01, thumb: acc01Thumb },
 
-  { id: 'w12', title: 'White Trucker Cap', brand: null, category: 'headwear', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, image: hat01, thumb: hat01Thumb },
-  { id: 'w13', title: 'Washed Denim Cap', brand: null, category: 'headwear', colour: 'grey', priceMinor: null, currency: 'GBP', owned: true, image: hat02, thumb: hat02Thumb },
+  { id: 'w12', title: 'White Trucker Cap', brand: null, category: 'headwear', department: 'unisex', colour: 'white', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: hat01, thumb: hat01Thumb },
+  { id: 'w13', title: 'Washed Denim Cap', brand: null, category: 'headwear', department: 'unisex', colour: 'grey', priceMinor: null, currency: 'GBP', owned: true, retailerUrl: null, image: hat02, thumb: hat02Thumb },
 ];
 
 export const catalogue: MockItem[] = [
-  { id: 'c1', title: 'Black Selvedge Denim', brand: 'Studio Nord', category: 'bottom', colour: 'black', priceMinor: 12800, currency: 'GBP', owned: false, image: bottom05, thumb: bottom05Thumb },
-  { id: 'c2', title: 'Cropped Moto Jacket', brand: 'ACME', category: 'outerwear', colour: 'black', priceMinor: 24900, currency: 'GBP', owned: false, image: outer05, thumb: outer05Thumb },
-  { id: 'c3', title: 'Tan Saddle Bag', brand: 'Maison Lu', category: 'bag', colour: 'brown', priceMinor: 15900, currency: 'GBP', owned: false, image: bag02, thumb: bag02Thumb },
-  { id: 'c4', title: 'Two-Tone Trucker Cap', brand: 'Northbound', category: 'headwear', colour: 'black', priceMinor: 4500, currency: 'GBP', owned: false, image: hat03, thumb: hat03Thumb },
+  { id: 'c1', title: 'Black Selvedge Denim', brand: 'Studio Nord', category: 'bottom', sizes: ['30','32','34','36'], department: 'menswear', colour: 'black', priceMinor: 12800, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/studio-nord/c1', image: bottom05, thumb: bottom05Thumb },
+  { id: 'c2', title: 'Cropped Moto Jacket', brand: 'ACME', category: 'outerwear', sizes: ['S','M','L'], department: 'womenswear', colour: 'black', priceMinor: 24900, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/acme/c2', image: outer05, thumb: outer05Thumb },
+  { id: 'c3', title: 'Tan Saddle Bag', brand: 'Maison Lu', category: 'bag', department: 'womenswear', colour: 'brown', priceMinor: 15900, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/maison-lu/c3', image: bag02, thumb: bag02Thumb },
+  { id: 'c4', title: 'Two-Tone Trucker Cap', brand: 'Northbound', category: 'headwear', department: 'unisex', colour: 'black', priceMinor: 4500, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c4', image: hat03, thumb: hat03Thumb },
+  { id: 'c5', title: 'Mid-Wash Straight Jean', brand: 'Studio Nord', category: 'bottom', sizes: ['26','28','30','32'], department: 'womenswear', colour: 'blue', priceMinor: 8900, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/studio-nord/c5', image: bottom03, thumb: bottom03Thumb },
+  { id: 'c6', title: 'Turn-Up Work Trouser', brand: 'Northbound', category: 'bottom', sizes: ['30','32','34'], department: 'menswear', colour: 'blue', priceMinor: 6400, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c6', image: bottom04, thumb: bottom04Thumb },
+  { id: 'c7', title: 'Rust Wool Bomber', brand: 'Maison Lu', category: 'outerwear', sizes: ['M','L','XL'], department: 'menswear', colour: 'brown', priceMinor: 18500, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/maison-lu/c7', image: outer06, thumb: outer06Thumb },
+  { id: 'c8', title: 'Classic Leather Biker', brand: 'ACME', category: 'outerwear', sizes: ['XS','S','M'], department: 'womenswear', colour: 'black', priceMinor: 34900, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/acme/c8', image: outer01, thumb: outer01Thumb },
+  { id: 'c9', title: 'Heavyweight Cotton Sweat', brand: 'Northbound', category: 'top', sizes: ['S','M','L','XL'], department: 'unisex', colour: 'white', priceMinor: 4200, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c9', image: top07, thumb: top07Thumb },
+  { id: 'c10', title: 'Crochet Knit Vest', brand: 'Maison Lu', category: 'top', sizes: ['XS','S','M'], department: 'womenswear', colour: 'yellow', priceMinor: 7600, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/maison-lu/c10', image: top04, thumb: top04Thumb },
+  { id: 'c11', title: 'Lace Trim Camisole', brand: 'Maison Lu', category: 'top', sizes: ['XS','S','M','L'], department: 'womenswear', colour: 'black', priceMinor: 5400, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/maison-lu/c11', image: top06, thumb: top06Thumb },
+  { id: 'c12', title: 'Court Sneaker', brand: 'ACME', category: 'footwear', sizes: ['7','8','9','10','11'], department: 'unisex', colour: 'white', priceMinor: 8200, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/acme/c12', image: shoe03, thumb: shoe03Thumb },
+  { id: 'c13', title: 'White Leather Trainer', brand: 'Studio Nord', category: 'footwear', sizes: ['6','7','8','9'], department: 'unisex', colour: 'white', priceMinor: 11500, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/studio-nord/c13', image: shoe02, thumb: shoe02Thumb },
+  { id: 'c14', title: 'Woven Leather Tote', brand: 'Maison Lu', category: 'bag', department: 'womenswear', colour: 'brown', priceMinor: 21000, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/maison-lu/c14', image: bag01, thumb: bag01Thumb },
+  { id: 'c15', title: 'Round Frame Sunglasses', brand: 'ACME', category: 'accessory', department: 'unisex', colour: 'black', priceMinor: 3800, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/acme/c15', image: acc01, thumb: acc01Thumb },
+  { id: 'c16', title: 'Canvas Trucker Cap', brand: 'Northbound', category: 'headwear', department: 'kids', colour: 'white', priceMinor: 1900, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c16', image: hat01, thumb: hat01Thumb },
+  { id: 'c17', title: 'Washed Denim Cap', brand: 'Northbound', category: 'headwear', department: 'kids', colour: 'grey', priceMinor: 2200, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c17', image: hat02, thumb: hat02Thumb },
+  { id: 'c18', title: 'Kids Rain Bomber', brand: 'Northbound', category: 'outerwear', sizes: ['XS','S','M'], department: 'kids', colour: 'brown', priceMinor: 3400, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c18', image: outer06, thumb: outer06Thumb },
+  { id: 'c19', title: 'Kids Everyday Sweat', brand: 'Northbound', category: 'top', sizes: ['XS','S','M'], department: 'kids', colour: 'white', priceMinor: 2400, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/northbound/c19', image: top07, thumb: top07Thumb },
+  { id: 'c20', title: 'Kids Court Sneaker', brand: 'ACME', category: 'footwear', sizes: ['6','7','8'], department: 'kids', colour: 'white', priceMinor: 3200, currency: 'GBP', owned: false, retailerUrl: 'https://example.com/acme/c20', image: shoe03, thumb: shoe03Thumb },
 ];
 
 export const BRANDS = ['ACME', 'Northbound', 'Studio Nord', 'Maison Lu'] as const;
@@ -176,7 +200,7 @@ export interface MockLook {
   likes: number;
 }
 
-/** "What others are wearing". Locked in V1 — the social graph is on the §2.3
+/** 'What others are wearing'. Locked in V1 — the social graph is on the §2.3
  *  cut list — so these render as a teaser, never a working feed. */
 export const communityLooks: MockLook[] = [
   { id: 'l1', handle: '@sena', caption: 'Layered for the cold snap', itemIds: ['w6', 'w5', 'w8'], likes: 412 },
@@ -187,6 +211,16 @@ export const communityLooks: MockLook[] = [
 export interface BrandMoment {
   id: string;
   brand: string;
+  /** URL-safe brand key, so a card can open that brand's page. */
+  slug: string;
+  /**
+   * True when the brand paid for this placement.
+   *
+   * Part of the data, not a styling choice: a paid placement must be labelled
+   * as an ad under the UK CAP Code and FTC endorsement guidance, and a flag the
+   * renderer cannot ignore is the only version that survives a redesign.
+   */
+  sponsored: boolean;
   kind: 'free_tryon' | 'dropping' | 'new_in';
   headline: string;
   detail: string;
@@ -201,6 +235,8 @@ export const brandMoments: BrandMoment[] = [
   {
     id: 'b1',
     brand: 'Studio Nord',
+    slug: 'studio-nord',
+    sponsored: true,
     kind: 'free_tryon',
     headline: 'Free try-on week',
     detail: 'Their whole autumn range, on you, at no cost.',
@@ -211,6 +247,8 @@ export const brandMoments: BrandMoment[] = [
   {
     id: 'b2',
     brand: 'Maison Lu',
+    slug: 'maison-lu',
+    sponsored: false,
     kind: 'dropping',
     headline: 'Drops Friday',
     detail: 'Cashmere restock. 40 pieces.',
@@ -221,6 +259,8 @@ export const brandMoments: BrandMoment[] = [
   {
     id: 'b3',
     brand: 'ACME',
+    slug: 'acme',
+    sponsored: false,
     kind: 'new_in',
     headline: 'New in',
     detail: '12 pieces added this week.',

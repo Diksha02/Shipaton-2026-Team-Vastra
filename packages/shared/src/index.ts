@@ -7,11 +7,15 @@
  * a field, that is a bug in this package, not something to patch on one side.
  */
 
+export * from './preference-onboarding';
 export * from './api';
+export * from './catalogue-query';
 export * from './enums';
 export * from './errors';
 export * from './flags';
 export * from './ids';
+export * from './referral-code';
+export * from './slots';
 
 export * from './schemas/asset';
 export * from './schemas/billing';
